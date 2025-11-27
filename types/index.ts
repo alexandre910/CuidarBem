@@ -27,6 +27,7 @@ export interface Cuidador extends User {
 export interface Enfermeiro extends User {
   role: "enfermeiro";
   coren: string;
+  corenDocumento?: string;
   disponibilidade: AvailabilityType[];
   valorHora?: number;
   valorDia?: number;
@@ -130,4 +131,32 @@ export interface SearchFilters {
   cidade?: string;
   disponibilidade?: AvailabilityType;
   role?: "cuidador" | "enfermeiro";
+}
+
+export interface Favorite {
+  professionalId: string;
+  addedAt: string;
+}
+
+export interface Report {
+  id: string;
+  reporterId: string;
+  reportedId: string;
+  reason: string;
+  description?: string;
+  status: "pending" | "reviewed" | "resolved";
+  createdAt: string;
+}
+
+export interface ServiceHistory {
+  id: string;
+  professionalId: string;
+  contratanteId: string;
+  type: "hour" | "day" | "week" | "month";
+  startDate: string;
+  endDate?: string;
+  status: "active" | "completed" | "cancelled";
+  rating?: number;
+  ratingComment?: string;
+  ratedAt?: string;
 }

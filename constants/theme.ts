@@ -14,6 +14,10 @@ export const Colors = {
     primary: "#00FCE3",
     accent1: "#000AFF",
     accent2: "#DC4429",
+    accent: {
+      blue: "#000AFF",
+      red: "#DC4429",
+    },
     border: "#E0E0E0",
     starFilled: "#FFD700",
     starEmpty: "#E0E0E0",
@@ -38,6 +42,10 @@ export const Colors = {
     primary: "#00FCE3",
     accent1: "#000AFF",
     accent2: "#DC4429",
+    accent: {
+      blue: "#000AFF",
+      red: "#DC4429",
+    },
     border: "#E0E0E0",
     starFilled: "#FFD700",
     starEmpty: "#E0E0E0",
@@ -91,6 +99,10 @@ export const Typography = {
   },
   h4: {
     fontSize: 20,
+    fontWeight: "600" as const,
+  },
+  subtitle: {
+    fontSize: 18,
     fontWeight: "600" as const,
   },
   body: {

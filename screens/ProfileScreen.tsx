@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { StyleSheet, View, Alert, Pressable, Platform } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { ScreenKeyboardAwareScrollView } from "@/components/ScreenKeyboardAwareScrollView";
 import { ThemedText } from "@/components/ThemedText";
@@ -9,9 +11,14 @@ import { Avatar } from "@/components/Avatar";
 import { RoleBadge } from "@/components/RoleBadge";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
+import { Card } from "@/components/Card";
 import { useAuth } from "@/context/AuthContext";
+import { useData } from "@/context/DataContext";
 import { Colors, Spacing, BorderRadius, Shadows } from "@/constants/theme";
 import { AvailabilityType } from "@/types";
+import { ProfileStackParamList } from "@/navigation/ProfileStackNavigator";
+
+type NavigationProp = NativeStackNavigationProp<ProfileStackParamList>;
 
 const availabilityOptions: { value: AvailabilityType; label: string }[] = [
   { value: "hora", label: "Hora" },
@@ -21,7 +28,9 @@ const availabilityOptions: { value: AvailabilityType; label: string }[] = [
 ];
 
 export default function ProfileScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const { user, subscription, updateProfile, logout } = useAuth();
+  const { favorites, serviceHistory } = useData();
 
   const [nome, setNome] = useState(user?.nome || "");
   const [telefone, setTelefone] = useState(user?.telefone || "");
@@ -29,6 +38,7 @@ export default function ProfileScreen() {
   const [foto, setFoto] = useState(user?.foto || "");
   
   const isProfessional = user?.role === "cuidador" || user?.role === "enfermeiro";
+  const isEnfermeiro = user?.role === "enfermeiro";
   const [disponibilidade, setDisponibilidade] = useState<AvailabilityType[]>(
     isProfessional && user && "disponibilidade" in user ? user.disponibilidade : []
   );
@@ -40,6 +50,9 @@ export default function ProfileScreen() {
   );
   const [valorMensal, setValorMensal] = useState(
     isProfessional && user && "valorMensal" in user ? String(user.valorMensal || "") : ""
+  );
+  const [corenDocumento, setCorenDocumento] = useState(
+    isEnfermeiro && user && "corenDocumento" in user ? user.corenDocumento || "" : ""
   );
 
   const [saving, setSaving] = useState(false);
@@ -69,6 +82,31 @@ export default function ProfileScreen() {
     }
   };
 
+  const pickCorenDocument = async () => {
+    if (Platform.OS === "web") {
+      Alert.alert("Funcionalidade", "Use o Expo Go para enviar documentos.");
+      return;
+    }
+    
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (!permissionResult.granted) {
+      Alert.alert("Permissão necessária", "Precisamos de acesso às suas fotos.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: false,
+      quality: 0.9,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setCorenDocumento(result.assets[0].uri);
+      Alert.alert("Documento Enviado", "Foto do documento COREN adicionada com sucesso.");
+    }
+  };
+
   const toggleAvailability = (type: AvailabilityType) => {
     if (disponibilidade.includes(type)) {
       setDisponibilidade(disponibilidade.filter((d) => d !== type));
@@ -92,6 +130,10 @@ export default function ProfileScreen() {
       updates.valorHora = parseFloat(valorHora) || 0;
       updates.valorDia = parseFloat(valorDia) || 0;
       updates.valorMensal = parseFloat(valorMensal) || 0;
+    }
+
+    if (isEnfermeiro) {
+      updates.corenDocumento = corenDocumento;
     }
 
     await updateProfile(updates);
@@ -154,6 +196,70 @@ export default function ProfileScreen() {
             Vencimento: {new Date(subscription.dataVencimento).toLocaleDateString("pt-BR")}
           </ThemedText>
         ) : null}
+      </View>
+
+      <View style={styles.quickActions}>
+        <Pressable
+          style={styles.quickActionItem}
+          onPress={() => navigation.navigate("Favorites")}
+        >
+          <View style={styles.quickActionLeft}>
+            <Feather name="heart" size={20} color={Colors.light.accent.red} />
+            <ThemedText type="body" style={styles.quickActionText}>
+              Favoritos
+            </ThemedText>
+          </View>
+          <View style={styles.quickActionRight}>
+            <ThemedText type="small" style={styles.quickActionCount}>
+              {favorites.length}
+            </ThemedText>
+            <Feather name="chevron-right" size={20} color="#CCCCCC" />
+          </View>
+        </Pressable>
+
+        <Pressable
+          style={styles.quickActionItem}
+          onPress={() => navigation.navigate("ServiceHistory")}
+        >
+          <View style={styles.quickActionLeft}>
+            <Feather name="clock" size={20} color={Colors.light.accent.blue} />
+            <ThemedText type="body" style={styles.quickActionText}>
+              Histórico de Serviços
+            </ThemedText>
+          </View>
+          <View style={styles.quickActionRight}>
+            <ThemedText type="small" style={styles.quickActionCount}>
+              {serviceHistory.length}
+            </ThemedText>
+            <Feather name="chevron-right" size={20} color="#CCCCCC" />
+          </View>
+        </Pressable>
+
+        <Pressable
+          style={styles.quickActionItem}
+          onPress={() => navigation.navigate("Subscription")}
+        >
+          <View style={styles.quickActionLeft}>
+            <Feather name="credit-card" size={20} color={Colors.light.primary} />
+            <ThemedText type="body" style={styles.quickActionText}>
+              Gerenciar Assinatura
+            </ThemedText>
+          </View>
+          <Feather name="chevron-right" size={20} color="#CCCCCC" />
+        </Pressable>
+
+        <Pressable
+          style={[styles.quickActionItem, styles.quickActionItemLast]}
+          onPress={() => navigation.navigate("PaymentHistory")}
+        >
+          <View style={styles.quickActionLeft}>
+            <Feather name="file-text" size={20} color="#666666" />
+            <ThemedText type="body" style={styles.quickActionText}>
+              Histórico de Pagamentos
+            </ThemedText>
+          </View>
+          <Feather name="chevron-right" size={20} color="#CCCCCC" />
+        </Pressable>
       </View>
 
       <View style={styles.section}>
@@ -251,6 +357,40 @@ export default function ProfileScreen() {
               placeholder="0,00"
             />
           </View>
+
+          {isEnfermeiro ? (
+            <View style={styles.section}>
+              <ThemedText type="h4" style={styles.sectionTitle}>
+                Documento COREN
+              </ThemedText>
+              <ThemedText type="small" style={styles.sectionDescription}>
+                Envie uma foto do seu registro COREN para verificação
+              </ThemedText>
+              <Pressable
+                style={styles.documentUpload}
+                onPress={pickCorenDocument}
+              >
+                {corenDocumento ? (
+                  <View style={styles.documentUploaded}>
+                    <Feather name="check-circle" size={24} color={Colors.light.success} />
+                    <ThemedText type="body" style={styles.documentText}>
+                      Documento enviado
+                    </ThemedText>
+                    <ThemedText type="small" style={styles.changeDocumentText}>
+                      Toque para alterar
+                    </ThemedText>
+                  </View>
+                ) : (
+                  <View style={styles.documentEmpty}>
+                    <Feather name="upload" size={24} color="#666666" />
+                    <ThemedText type="body" style={styles.documentText}>
+                      Enviar foto do COREN
+                    </ThemedText>
+                  </View>
+                )}
+              </Pressable>
+            </View>
+          ) : null}
         </>
       ) : null}
 
@@ -352,5 +492,67 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     marginBottom: Spacing["3xl"],
+  },
+  quickActions: {
+    backgroundColor: Colors.light.backgroundDefault,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing["2xl"],
+    ...Shadows.card,
+  },
+  quickActionItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.light.border,
+  },
+  quickActionItemLast: {
+    borderBottomWidth: 0,
+  },
+  quickActionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  quickActionRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  quickActionText: {
+    fontWeight: "500",
+  },
+  quickActionCount: {
+    color: "#666666",
+  },
+  sectionDescription: {
+    color: "#666666",
+    marginBottom: Spacing.md,
+  },
+  documentUpload: {
+    backgroundColor: Colors.light.backgroundDefault,
+    borderWidth: 2,
+    borderColor: Colors.light.border,
+    borderStyle: "dashed",
+    borderRadius: BorderRadius.md,
+    padding: Spacing.xl,
+    alignItems: "center",
+  },
+  documentUploaded: {
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  documentEmpty: {
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  documentText: {
+    fontWeight: "500",
+    textAlign: "center",
+  },
+  changeDocumentText: {
+    color: Colors.light.primary,
   },
 });

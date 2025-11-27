@@ -11,7 +11,10 @@ import {
   Consulta,
   Exercicio,
   Cuidador,
-  Enfermeiro
+  Enfermeiro,
+  Favorite,
+  Report,
+  ServiceHistory
 } from "@/types";
 import { useAuth } from "./AuthContext";
 
@@ -19,6 +22,8 @@ interface DataContextType {
   professionals: (Cuidador | Enfermeiro)[];
   conversations: Conversation[];
   cuidados: CuidadoPaciente | null;
+  favorites: string[];
+  serviceHistory: ServiceHistory[];
   searchProfessionals: (filters: SearchFilters) => (Cuidador | Enfermeiro)[];
   getMessages: (conversationId: string) => Promise<Message[]>;
   sendMessage: (conversationId: string, text: string) => Promise<void>;
@@ -35,6 +40,12 @@ interface DataContextType {
   deleteExercicio: (id: string) => Promise<void>;
   getUserById: (id: string) => UserProfile | undefined;
   refreshData: () => Promise<void>;
+  toggleFavorite: (professionalId: string) => Promise<void>;
+  isFavorite: (professionalId: string) => boolean;
+  getFavorites: () => (Cuidador | Enfermeiro)[];
+  reportProfile: (reportedId: string, reason: string, description?: string) => Promise<void>;
+  addServiceHistory: (history: Omit<ServiceHistory, "id">) => Promise<void>;
+  rateService: (serviceId: string, rating: number, comment?: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -44,6 +55,9 @@ const STORAGE_KEYS = {
   MESSAGES: "@cuidarbem:messages",
   CUIDADOS: "@cuidarbem:cuidados",
   USERS_DB: "@cuidarbem:users_db",
+  FAVORITES: "@cuidarbem:favorites",
+  REPORTS: "@cuidarbem:reports",
+  SERVICE_HISTORY: "@cuidarbem:service_history",
 };
 
 const mockProfessionals: (Cuidador | Enfermeiro)[] = [
@@ -137,12 +151,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [cuidados, setCuidados] = useState<CuidadoPaciente | null>(null);
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [serviceHistory, setServiceHistory] = useState<ServiceHistory[]>([]);
 
   useEffect(() => {
     if (user) {
       loadConversations();
       loadCuidados();
       loadAllUsers();
+      loadFavorites();
+      loadServiceHistory();
+    } else {
+      setFavorites([]);
+      setServiceHistory([]);
     }
   }, [user]);
 
@@ -342,6 +363,122 @@ export function DataProvider({ children }: { children: ReactNode }) {
     await loadAllUsers();
     await loadConversations();
     await loadCuidados();
+    await loadFavorites();
+    await loadServiceHistory();
+  };
+
+  const loadFavorites = async () => {
+    if (!user) return;
+    try {
+      const stored = await AsyncStorage.getItem(`${STORAGE_KEYS.FAVORITES}:${user.id}`);
+      if (stored) {
+        setFavorites(JSON.parse(stored));
+      }
+    } catch (error) {
+      console.error("Error loading favorites:", error);
+    }
+  };
+
+  const toggleFavorite = async (professionalId: string) => {
+    if (!user) return;
+    try {
+      let newFavorites: string[];
+      if (favorites.includes(professionalId)) {
+        newFavorites = favorites.filter((id) => id !== professionalId);
+      } else {
+        newFavorites = [...favorites, professionalId];
+      }
+      setFavorites(newFavorites);
+      await AsyncStorage.setItem(
+        `${STORAGE_KEYS.FAVORITES}:${user.id}`,
+        JSON.stringify(newFavorites)
+      );
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
+  };
+
+  const isFavorite = (professionalId: string): boolean => {
+    return favorites.includes(professionalId);
+  };
+
+  const getFavorites = (): (Cuidador | Enfermeiro)[] => {
+    return professionals.filter((p) => favorites.includes(p.id));
+  };
+
+  const reportProfile = async (reportedId: string, reason: string, description?: string) => {
+    if (!user) return;
+    try {
+      const report: Report = {
+        id: `report_${Date.now()}`,
+        reporterId: user.id,
+        reportedId,
+        reason,
+        description,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      };
+      const stored = await AsyncStorage.getItem(STORAGE_KEYS.REPORTS);
+      const reports = stored ? JSON.parse(stored) : [];
+      reports.push(report);
+      await AsyncStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify(reports));
+    } catch (error) {
+      console.error("Error reporting profile:", error);
+    }
+  };
+
+  const loadServiceHistory = async () => {
+    if (!user) return;
+    try {
+      const stored = await AsyncStorage.getItem(`${STORAGE_KEYS.SERVICE_HISTORY}:${user.id}`);
+      if (stored) {
+        setServiceHistory(JSON.parse(stored));
+      }
+    } catch (error) {
+      console.error("Error loading service history:", error);
+    }
+  };
+
+  const addServiceHistory = async (history: Omit<ServiceHistory, "id">) => {
+    if (!user) return;
+    try {
+      const newHistory: ServiceHistory = {
+        ...history,
+        id: `service_${Date.now()}`,
+      };
+      const updated = [...serviceHistory, newHistory];
+      setServiceHistory(updated);
+      await AsyncStorage.setItem(
+        `${STORAGE_KEYS.SERVICE_HISTORY}:${user.id}`,
+        JSON.stringify(updated)
+      );
+    } catch (error) {
+      console.error("Error adding service history:", error);
+    }
+  };
+
+  const rateService = async (serviceId: string, rating: number, comment?: string) => {
+    if (!user) return;
+    try {
+      const updated = serviceHistory.map((h) => {
+        if (h.id === serviceId) {
+          return {
+            ...h,
+            rating,
+            ratingComment: comment,
+            ratedAt: new Date().toISOString(),
+          };
+        }
+        return h;
+      });
+      setServiceHistory(updated);
+      await AsyncStorage.setItem(
+        `${STORAGE_KEYS.SERVICE_HISTORY}:${user.id}`,
+        JSON.stringify(updated)
+      );
+    } catch (error) {
+      console.error("Error rating service:", error);
+    }
   };
 
   return (
@@ -350,6 +487,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         professionals,
         conversations,
         cuidados,
+        favorites,
+        serviceHistory,
         searchProfessionals,
         getMessages,
         sendMessage,
@@ -366,6 +505,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
         deleteExercicio,
         getUserById,
         refreshData,
+        toggleFavorite,
+        isFavorite,
+        getFavorites,
+        reportProfile,
+        addServiceHistory,
+        rateService,
       }}
     >
       {children}

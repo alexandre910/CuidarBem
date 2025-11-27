@@ -1,5 +1,12 @@
-import React from "react";
-import { StyleSheet, View, Alert } from "react-native";
+import React, { useState } from "react";
+import {
+  StyleSheet,
+  View,
+  Alert,
+  Pressable,
+  Modal,
+  TextInput,
+} from "react-native";
 import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
@@ -19,11 +26,22 @@ import { Cuidador, Enfermeiro } from "@/types";
 type RouteProps = RouteProp<SearchStackParamList, "ProfileDetail">;
 type NavigationProp = NativeStackNavigationProp<SearchStackParamList>;
 
+const REPORT_REASONS = [
+  "Informações falsas",
+  "Comportamento inadequado",
+  "Spam ou fraude",
+  "Perfil falso",
+  "Outro",
+];
+
 export default function ProfileDetailScreen() {
   const route = useRoute<RouteProps>();
   const navigation = useNavigation<NavigationProp>();
-  const { getUserById, startConversation } = useData();
+  const { getUserById, startConversation, toggleFavorite, isFavorite, reportProfile } = useData();
   const { subscription } = useAuth();
+  const [reportModal, setReportModal] = useState(false);
+  const [selectedReason, setSelectedReason] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
 
   const profile = getUserById(route.params.profileId) as Cuidador | Enfermeiro | undefined;
 
@@ -74,8 +92,49 @@ export default function ProfileDetailScreen() {
     }
   };
 
+  const handleToggleFavorite = () => {
+    toggleFavorite(profile.id);
+  };
+
+  const handleReport = async () => {
+    if (!selectedReason) {
+      Alert.alert("Erro", "Selecione um motivo para a denúncia.");
+      return;
+    }
+    await reportProfile(profile.id, selectedReason, reportDescription);
+    setReportModal(false);
+    setSelectedReason("");
+    setReportDescription("");
+    Alert.alert(
+      "Denúncia Enviada",
+      "Obrigado por ajudar a manter nossa comunidade segura. Analisaremos sua denúncia."
+    );
+  };
+
+  const favorited = isFavorite(profile.id);
+
   return (
     <ScreenScrollView>
+      <View style={styles.actionButtons}>
+        <Pressable
+          onPress={handleToggleFavorite}
+          style={styles.actionButton}
+        >
+          <Feather
+            name="heart"
+            size={24}
+            color={favorited ? Colors.light.accent.red : "#CCCCCC"}
+            style={favorited ? styles.heartFilled : undefined}
+          />
+        </Pressable>
+        <Pressable
+          onPress={() => setReportModal(true)}
+          style={styles.actionButton}
+        >
+          <Feather name="flag" size={24} color="#999999" />
+        </Pressable>
+      </View>
+
       <View style={styles.header}>
         <Avatar uri={profile.foto} size={120} role={profile.role} style={styles.avatar} />
         <View style={styles.headerInfo}>
@@ -195,6 +254,77 @@ export default function ProfileDetailScreen() {
       >
         Enviar Mensagem
       </Button>
+
+      <Modal
+        visible={reportModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setReportModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ThemedText type="subtitle" style={styles.modalTitle}>
+              Denunciar Perfil
+            </ThemedText>
+
+            <ThemedText type="small" style={styles.modalLabel}>
+              Motivo da denúncia
+            </ThemedText>
+            {REPORT_REASONS.map((reason) => (
+              <Pressable
+                key={reason}
+                style={[
+                  styles.reasonOption,
+                  selectedReason === reason && styles.reasonOptionSelected,
+                ]}
+                onPress={() => setSelectedReason(reason)}
+              >
+                <View style={styles.radioOuter}>
+                  {selectedReason === reason ? (
+                    <View style={styles.radioInner} />
+                  ) : null}
+                </View>
+                <ThemedText type="body">{reason}</ThemedText>
+              </Pressable>
+            ))}
+
+            <TextInput
+              style={styles.reportInput}
+              placeholder="Descreva o problema (opcional)"
+              placeholderTextColor="#999999"
+              value={reportDescription}
+              onChangeText={setReportDescription}
+              multiline
+              numberOfLines={3}
+            />
+
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={styles.cancelButton}
+                onPress={() => {
+                  setReportModal(false);
+                  setSelectedReason("");
+                  setReportDescription("");
+                }}
+              >
+                <ThemedText type="body">Cancelar</ThemedText>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.submitButton,
+                  !selectedReason && styles.submitButtonDisabled,
+                ]}
+                onPress={handleReport}
+                disabled={!selectedReason}
+              >
+                <ThemedText type="body" style={styles.submitButtonText}>
+                  Enviar
+                </ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScreenScrollView>
   );
 }
@@ -204,6 +334,18 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  actionButtons: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  actionButton: {
+    padding: Spacing.sm,
+  },
+  heartFilled: {
+    opacity: 1,
   },
   header: {
     alignItems: "center",
@@ -321,5 +463,87 @@ const styles = StyleSheet.create({
   contactButton: {
     marginTop: Spacing.md,
     marginBottom: Spacing.xl,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: Spacing.xl,
+  },
+  modalContent: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.xl,
+    width: "100%",
+    maxWidth: 400,
+  },
+  modalTitle: {
+    textAlign: "center",
+    marginBottom: Spacing.lg,
+  },
+  modalLabel: {
+    color: "#666666",
+    marginBottom: Spacing.sm,
+  },
+  reasonOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: Spacing.sm,
+    gap: Spacing.md,
+  },
+  reasonOptionSelected: {
+    opacity: 1,
+  },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: Colors.light.primary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: Colors.light.primary,
+  },
+  reportInput: {
+    borderWidth: 1,
+    borderColor: "#CCCCCC",
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    minHeight: 80,
+    textAlignVertical: "top",
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.lg,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: Spacing.md,
+  },
+  cancelButton: {
+    flex: 1,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: "#CCCCCC",
+    alignItems: "center",
+  },
+  submitButton: {
+    flex: 1,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.light.accent.red,
+    alignItems: "center",
+  },
+  submitButtonDisabled: {
+    opacity: 0.5,
+  },
+  submitButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
   },
 });

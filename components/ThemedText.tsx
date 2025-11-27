@@ -6,7 +6,7 @@ import { Typography } from "@/constants/theme";
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
-  type?: "h1" | "h2" | "h3" | "h4" | "body" | "small" | "caption" | "link" | "badge";
+  type?: "h1" | "h2" | "h3" | "h4" | "subtitle" | "body" | "small" | "caption" | "link" | "badge";
 };
 
 export function ThemedText({
@@ -44,6 +44,8 @@ export function ThemedText({
         return Typography.h3;
       case "h4":
         return Typography.h4;
+      case "subtitle":
+        return Typography.subtitle;
       case "body":
         return Typography.body;
       case "small":
