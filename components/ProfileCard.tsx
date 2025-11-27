@@ -219,6 +219,6 @@ const styles = StyleSheet.create({
   },
   priceValue: {
     fontWeight: "600",
-    color: Colors.light.primary,
+    color: Colors.light.text,
   },
 });

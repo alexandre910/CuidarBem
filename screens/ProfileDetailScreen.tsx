@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   priceValue: {
-    color: Colors.light.primary,
+    color: Colors.light.text,
   },
   contactInfo: {
     backgroundColor: Colors.light.backgroundDefault,
