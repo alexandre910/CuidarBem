@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { StyleSheet, Pressable, ViewStyle, StyleProp } from "react-native";
+import { StyleSheet, Pressable, ViewStyle, StyleProp, ActivityIndicator } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -9,13 +9,18 @@ import Animated, {
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import { BorderRadius, Spacing } from "@/constants/theme";
+import { BorderRadius, Spacing, Colors } from "@/constants/theme";
+
+type ButtonVariant = "primary" | "secondary" | "outline" | "text";
 
 interface ButtonProps {
   onPress?: () => void;
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
   disabled?: boolean;
+  loading?: boolean;
+  variant?: ButtonVariant;
+  icon?: ReactNode;
 }
 
 const springConfig: WithSpringConfig = {
@@ -33,6 +38,9 @@ export function Button({
   children,
   style,
   disabled = false,
+  loading = false,
+  variant = "primary",
+  icon,
 }: ButtonProps) {
   const { theme } = useTheme();
   const scale = useSharedValue(1);
@@ -42,39 +50,88 @@ export function Button({
   }));
 
   const handlePressIn = () => {
-    if (!disabled) {
+    if (!disabled && !loading) {
       scale.value = withSpring(0.98, springConfig);
     }
   };
 
   const handlePressOut = () => {
-    if (!disabled) {
+    if (!disabled && !loading) {
       scale.value = withSpring(1, springConfig);
     }
   };
 
+  const getBackgroundColor = () => {
+    switch (variant) {
+      case "primary":
+        return Colors.light.primary;
+      case "secondary":
+        return Colors.light.backgroundSecondary;
+      case "outline":
+        return "transparent";
+      case "text":
+        return "transparent";
+      default:
+        return Colors.light.primary;
+    }
+  };
+
+  const getTextColor = () => {
+    switch (variant) {
+      case "primary":
+        return Colors.light.buttonText;
+      case "secondary":
+        return Colors.light.text;
+      case "outline":
+        return Colors.light.primary;
+      case "text":
+        return Colors.light.link;
+      default:
+        return Colors.light.buttonText;
+    }
+  };
+
+  const getBorderStyle = () => {
+    if (variant === "outline") {
+      return {
+        borderWidth: 2,
+        borderColor: Colors.light.primary,
+      };
+    }
+    return {};
+  };
+
   return (
     <AnimatedPressable
-      onPress={disabled ? undefined : onPress}
+      onPress={disabled || loading ? undefined : onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      disabled={disabled}
+      disabled={disabled || loading}
       style={[
         styles.button,
         {
-          backgroundColor: theme.link,
+          backgroundColor: getBackgroundColor(),
           opacity: disabled ? 0.5 : 1,
         },
+        getBorderStyle(),
+        variant === "text" && styles.textButton,
         style,
         animatedStyle,
       ]}
     >
-      <ThemedText
-        type="body"
-        style={[styles.buttonText, { color: theme.buttonText }]}
-      >
-        {children}
-      </ThemedText>
+      {loading ? (
+        <ActivityIndicator color={getTextColor()} size="small" />
+      ) : (
+        <>
+          {icon}
+          <ThemedText
+            type="body"
+            style={[styles.buttonText, { color: getTextColor() }, icon ? styles.textWithIcon : null]}
+          >
+            {children}
+          </ThemedText>
+        </>
+      )}
     </AnimatedPressable>
   );
 }
@@ -82,11 +139,21 @@ export function Button({
 const styles = StyleSheet.create({
   button: {
     height: Spacing.buttonHeight,
-    borderRadius: BorderRadius.full,
+    borderRadius: BorderRadius.md,
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "row",
+    paddingHorizontal: Spacing.xl,
+  },
+  textButton: {
+    height: "auto",
+    paddingHorizontal: 0,
+    paddingVertical: Spacing.sm,
   },
   buttonText: {
     fontWeight: "600",
+  },
+  textWithIcon: {
+    marginLeft: Spacing.sm,
   },
 });

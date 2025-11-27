@@ -1,194 +1,356 @@
-import { useState } from "react";
-import { StyleSheet, View, TextInput } from "react-native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import React, { useState } from "react";
+import { StyleSheet, View, Alert, Pressable, Platform } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 
 import { ScreenKeyboardAwareScrollView } from "@/components/ScreenKeyboardAwareScrollView";
 import { ThemedText } from "@/components/ThemedText";
+import { Avatar } from "@/components/Avatar";
+import { RoleBadge } from "@/components/RoleBadge";
 import { Button } from "@/components/Button";
-import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius, Typography } from "@/constants/theme";
-import Spacer from "@/components/Spacer";
-import type { ProfileStackParamList } from "@/navigation/ProfileStackNavigator";
+import { Input } from "@/components/Input";
+import { useAuth } from "@/context/AuthContext";
+import { Colors, Spacing, BorderRadius, Shadows } from "@/constants/theme";
+import { AvailabilityType } from "@/types";
 
-type ProfileScreenProps = {
-  navigation: NativeStackNavigationProp<ProfileStackParamList, "Profile">;
-};
+const availabilityOptions: { value: AvailabilityType; label: string }[] = [
+  { value: "hora", label: "Hora" },
+  { value: "dia", label: "Dia" },
+  { value: "semana", label: "Semana" },
+  { value: "mes", label: "Mês" },
+];
 
-export default function ProfileScreen({ navigation }: ProfileScreenProps) {
-  const { theme, isDark } = useTheme();
+export default function ProfileScreen() {
+  const { user, subscription, updateProfile, logout } = useAuth();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [nome, setNome] = useState(user?.nome || "");
+  const [telefone, setTelefone] = useState(user?.telefone || "");
+  const [cidade, setCidade] = useState(user?.cidade || "");
+  const [foto, setFoto] = useState(user?.foto || "");
+  
+  const isProfessional = user?.role === "cuidador" || user?.role === "enfermeiro";
+  const [disponibilidade, setDisponibilidade] = useState<AvailabilityType[]>(
+    isProfessional && user && "disponibilidade" in user ? user.disponibilidade : []
+  );
+  const [valorHora, setValorHora] = useState(
+    isProfessional && user && "valorHora" in user ? String(user.valorHora || "") : ""
+  );
+  const [valorDia, setValorDia] = useState(
+    isProfessional && user && "valorDia" in user ? String(user.valorDia || "") : ""
+  );
+  const [valorMensal, setValorMensal] = useState(
+    isProfessional && user && "valorMensal" in user ? String(user.valorMensal || "") : ""
+  );
 
-  const handleSubmit = () => {
-    console.log("Form submitted:", { name, email, password });
+  const [saving, setSaving] = useState(false);
+
+  const pickImage = async () => {
+    if (Platform.OS === "web") {
+      Alert.alert("Funcionalidade", "Use o Expo Go para capturar fotos.");
+      return;
+    }
+    
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (!permissionResult.granted) {
+      Alert.alert("Permissão necessária", "Precisamos de acesso às suas fotos.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setFoto(result.assets[0].uri);
+    }
   };
 
-  const inputStyle = [
-    styles.input,
-    {
-      backgroundColor: theme.backgroundDefault,
-      color: theme.text,
-    },
-  ];
+  const toggleAvailability = (type: AvailabilityType) => {
+    if (disponibilidade.includes(type)) {
+      setDisponibilidade(disponibilidade.filter((d) => d !== type));
+    } else {
+      setDisponibilidade([...disponibilidade, type]);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    
+    const updates: any = {
+      nome,
+      telefone,
+      cidade,
+      foto,
+    };
+
+    if (isProfessional) {
+      updates.disponibilidade = disponibilidade;
+      updates.valorHora = parseFloat(valorHora) || 0;
+      updates.valorDia = parseFloat(valorDia) || 0;
+      updates.valorMensal = parseFloat(valorMensal) || 0;
+    }
+
+    await updateProfile(updates);
+    setSaving(false);
+    Alert.alert("Sucesso", "Perfil atualizado com sucesso!");
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Sair",
+      "Tem certeza que deseja sair da sua conta?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Sair", style: "destructive", onPress: logout },
+      ]
+    );
+  };
+
+  const getSubscriptionStatus = () => {
+    if (!subscription) return { text: "Sem assinatura", color: Colors.light.error };
+    switch (subscription.status) {
+      case "ativo":
+        return { text: "Assinatura Ativa", color: Colors.light.success };
+      case "pendente":
+        return { text: "Pagamento Pendente", color: Colors.light.warning };
+      case "expirado":
+        return { text: "Assinatura Expirada", color: Colors.light.error };
+      default:
+        return { text: "Sem assinatura", color: Colors.light.error };
+    }
+  };
+
+  const subscriptionStatus = getSubscriptionStatus();
 
   return (
     <ScreenKeyboardAwareScrollView>
-      <View style={styles.section}>
-        <ThemedText type="h1">Heading 1</ThemedText>
-        <ThemedText type="small" style={styles.meta}>
-          32px • Bold
-        </ThemedText>
+      <View style={styles.photoSection}>
+        <Pressable onPress={pickImage} style={styles.photoContainer}>
+          <Avatar uri={foto} size={120} role={user?.role} />
+          <View style={styles.editPhotoButton}>
+            <Feather name="camera" size={16} color="#FFFFFF" />
+          </View>
+        </Pressable>
+        <RoleBadge role={user?.role || "contratante"} size="medium" style={styles.roleBadge} />
+      </View>
+
+      <View style={[styles.subscriptionCard, { borderColor: subscriptionStatus.color }]}>
+        <View style={styles.subscriptionHeader}>
+          <Feather
+            name={subscription?.status === "ativo" ? "check-circle" : "alert-circle"}
+            size={20}
+            color={subscriptionStatus.color}
+          />
+          <ThemedText type="body" style={[styles.subscriptionText, { color: subscriptionStatus.color }]}>
+            {subscriptionStatus.text}
+          </ThemedText>
+        </View>
+        {subscription?.dataVencimento ? (
+          <ThemedText type="caption" style={styles.subscriptionDate}>
+            Vencimento: {new Date(subscription.dataVencimento).toLocaleDateString("pt-BR")}
+          </ThemedText>
+        ) : null}
       </View>
 
       <View style={styles.section}>
-        <ThemedText type="h2">Heading 2</ThemedText>
-        <ThemedText type="small" style={styles.meta}>
-          28px • Bold
+        <ThemedText type="h4" style={styles.sectionTitle}>
+          Dados Pessoais
         </ThemedText>
-      </View>
+        
+        <Input
+          label="Nome completo"
+          value={nome}
+          onChangeText={setNome}
+          leftIcon="user"
+        />
 
-      <View style={styles.section}>
-        <ThemedText type="h3">Heading 3</ThemedText>
-        <ThemedText type="small" style={styles.meta}>
-          24px • Semi-Bold
-        </ThemedText>
-      </View>
+        <Input
+          label="E-mail"
+          value={user?.email || ""}
+          editable={false}
+          leftIcon="mail"
+          containerStyle={styles.disabledInput}
+        />
 
-      <View style={styles.section}>
-        <ThemedText type="h4">Heading 4</ThemedText>
-        <ThemedText type="small" style={styles.meta}>
-          20px • Semi-Bold
-        </ThemedText>
-      </View>
+        <Input
+          label="Telefone"
+          value={telefone}
+          onChangeText={setTelefone}
+          leftIcon="phone"
+          keyboardType="phone-pad"
+        />
 
-      <View style={styles.section}>
-        <ThemedText type="body">
-          Body text - This is the default text style for paragraphs and general
-          content.
-        </ThemedText>
-        <ThemedText type="small" style={styles.meta}>
-          16px • Regular
-        </ThemedText>
-      </View>
-
-      <View style={styles.section}>
-        <ThemedText type="small">
-          Small text - Used for captions, labels, and secondary information.
-        </ThemedText>
-        <ThemedText type="small" style={styles.meta}>
-          14px • Regular
-        </ThemedText>
-      </View>
-
-      <View style={styles.section}>
-        <ThemedText type="link">Link text - Interactive elements</ThemedText>
-        <ThemedText type="small" style={styles.meta}>
-          16px • Regular • Colored
-        </ThemedText>
-      </View>
-
-      <Spacer height={Spacing["4xl"]} />
-
-      <View style={styles.fieldContainer}>
-        <ThemedText type="small" style={styles.label}>
-          Name
-        </ThemedText>
-        <TextInput
-          style={inputStyle}
-          value={name}
-          onChangeText={setName}
-          placeholder="Enter your name"
-          placeholderTextColor={isDark ? "#9BA1A6" : "#687076"}
-          autoCapitalize="words"
-          returnKeyType="next"
+        <Input
+          label="Cidade"
+          value={cidade}
+          onChangeText={setCidade}
+          leftIcon="map-pin"
         />
       </View>
 
-      <Spacer height={Spacing.lg} />
+      {isProfessional ? (
+        <>
+          <View style={styles.section}>
+            <ThemedText type="h4" style={styles.sectionTitle}>
+              Disponibilidade
+            </ThemedText>
+            <View style={styles.availabilityOptions}>
+              {availabilityOptions.map((option) => (
+                <Pressable
+                  key={option.value}
+                  onPress={() => toggleAvailability(option.value)}
+                  style={[
+                    styles.availabilityOption,
+                    disponibilidade.includes(option.value) && styles.availabilityOptionActive,
+                  ]}
+                >
+                  <ThemedText
+                    type="body"
+                    style={[
+                      styles.availabilityText,
+                      disponibilidade.includes(option.value) && styles.availabilityTextActive,
+                    ]}
+                  >
+                    {option.label}
+                  </ThemedText>
+                </Pressable>
+              ))}
+            </View>
+          </View>
 
-      <View style={styles.fieldContainer}>
-        <ThemedText type="small" style={styles.label}>
-          Email
-        </ThemedText>
-        <TextInput
-          style={inputStyle}
-          value={email}
-          onChangeText={setEmail}
-          placeholder="your.email@example.com"
-          placeholderTextColor={isDark ? "#9BA1A6" : "#687076"}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          returnKeyType="next"
-        />
-      </View>
+          <View style={styles.section}>
+            <ThemedText type="h4" style={styles.sectionTitle}>
+              Valores de Serviço
+            </ThemedText>
 
-      <Spacer height={Spacing.lg} />
+            <Input
+              label="Valor por Hora (R$)"
+              value={valorHora}
+              onChangeText={setValorHora}
+              keyboardType="decimal-pad"
+              placeholder="0,00"
+            />
 
-      <View style={styles.fieldContainer}>
-        <ThemedText type="small" style={styles.label}>
-          Password
-        </ThemedText>
-        <TextInput
-          style={inputStyle}
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Enter a password"
-          placeholderTextColor={isDark ? "#9BA1A6" : "#687076"}
-          secureTextEntry
-          autoCapitalize="none"
-          returnKeyType="next"
-        />
-      </View>
+            <Input
+              label="Valor por Dia (R$)"
+              value={valorDia}
+              onChangeText={setValorDia}
+              keyboardType="decimal-pad"
+              placeholder="0,00"
+            />
 
-      <Spacer height={Spacing.lg} />
+            <Input
+              label="Valor Mensal (R$)"
+              value={valorMensal}
+              onChangeText={setValorMensal}
+              keyboardType="decimal-pad"
+              placeholder="0,00"
+            />
+          </View>
+        </>
+      ) : null}
 
-      <Button onPress={handleSubmit}>Submit Form</Button>
+      <Button onPress={handleSave} loading={saving} style={styles.saveButton}>
+        Salvar Alterações
+      </Button>
 
-      <Spacer height={Spacing["2xl"]} />
-
-      <ThemedText type="h3" style={styles.sectionTitle}>
-        Testing
-      </ThemedText>
-      <Spacer height={Spacing.md} />
       <Button
-        onPress={() => navigation.navigate("Crash")}
-        style={styles.crashButton}
+        variant="text"
+        onPress={handleLogout}
+        style={styles.logoutButton}
+        icon={<Feather name="log-out" size={18} color={Colors.light.error} />}
       >
-        Crash App
+        <ThemedText style={{ color: Colors.light.error }}>Sair da Conta</ThemedText>
       </Button>
     </ScreenKeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  section: {
-    marginBottom: Spacing["3xl"],
+  photoSection: {
+    alignItems: "center",
+    marginBottom: Spacing["2xl"],
   },
-  meta: {
-    opacity: 0.5,
-    marginTop: Spacing.sm,
+  photoContainer: {
+    position: "relative",
   },
-  fieldContainer: {
-    width: "100%",
+  editPhotoButton: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.light.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 3,
+    borderColor: Colors.light.backgroundRoot,
   },
-  label: {
-    marginBottom: Spacing.sm,
-    fontWeight: "600",
-    opacity: 0.8,
+  roleBadge: {
+    marginTop: Spacing.md,
   },
-  input: {
-    height: Spacing.inputHeight,
-    borderWidth: 0,
+  subscriptionCard: {
+    backgroundColor: Colors.light.backgroundDefault,
+    padding: Spacing.lg,
     borderRadius: BorderRadius.md,
-    paddingHorizontal: Spacing.lg,
-    fontSize: Typography.body.fontSize,
+    borderWidth: 2,
+    marginBottom: Spacing["2xl"],
+    ...Shadows.card,
+  },
+  subscriptionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  subscriptionText: {
+    marginLeft: Spacing.sm,
+    fontWeight: "600",
+  },
+  subscriptionDate: {
+    marginTop: Spacing.xs,
+    marginLeft: 28,
+    color: "#666666",
+  },
+  section: {
+    marginBottom: Spacing["2xl"],
   },
   sectionTitle: {
-    marginTop: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
-  crashButton: {
-    backgroundColor: "#FF3B30",
+  disabledInput: {
+    opacity: 0.6,
+  },
+  availabilityOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: Spacing.sm,
+  },
+  availabilityOption: {
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    backgroundColor: Colors.light.backgroundDefault,
+  },
+  availabilityOptionActive: {
+    backgroundColor: Colors.light.primary,
+    borderColor: Colors.light.primary,
+  },
+  availabilityText: {
+    fontWeight: "500",
+  },
+  availabilityTextActive: {
+    fontWeight: "600",
+  },
+  saveButton: {
+    marginBottom: Spacing.lg,
+  },
+  logoutButton: {
+    marginBottom: Spacing["3xl"],
   },
 });
