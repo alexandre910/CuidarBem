@@ -1,0 +1,49 @@
+Aplicativo chamado CuidarBem que terá a frase: Cuidados com Carinho, embaixo do logotipo e escrito: Conectamos famílias a cuidadores e enfermeiros qualificados para proporcionar o melhor cuidado aos seus entes queridos.
+Este aplicativo terá cadastro de enfermeiros, cuidadores, contratantes e empresas e possui assinatura com plano mensal ou anual para enfermeiros, cuidadores, contratantes e empresas para ter acesso aos seus telefones, chat e-mail.
+Aplicativo funcionara como uma comunicação entre cuidadoras e enfermeiros que oferecem serviços e contratantes que procuram serviços e empresas que oferecem cursos para enfermeiras e cuidadoras
+No aplicativo utilizar obrigatoriamente cor de fundo #FFFAC7, cor de texto #000000, cor #00FCE3 para botões e cabeçalho e texto interno dos botões cor #000000 e pode usar essas duas cores #000AFF e #DC4429 para outros dados do aplicativo.
+
+Segue os requisitos
+
+1. Requisitos Funcionais (RF)
+
+
+RF01: O sistema deve permitir o cadastro do cuidador. Os dados são: nome, CPF, telefone, e-mail, cidade, disponibilidade e foto.
+RF02: O sistema deve permitir o cadastro do contratante. Os dados são: nome, CPF, telefone, e-mail, cidade, e foto opcional do idoso.
+RF03: O sistema deve permitir o cadastro de enfermeiros. Os dados são: nome, CPF, Coren, telefone, e-mail, cidade, disponibilidade e foto.
+RF04: O sistema deve permitir o cadastro de empresas que oferecem cursos. Os dados são: nome, CNPJ, telefone, e-mail e foto ou logotipo
+RF05: O sistema deve permitir que o contratante registre informações de cuidados do paciente, incluindo: remédios, horários das refeições, consultas médicas e exercícios físicos.
+RF06: O sistema deve permitir que cuidadores e enfermeiros cadastrem seus valores de serviço (por hora, por dia e mensal).
+RF07: O sistema deve permitir o pagamento de assinatura mensal ou anual.
+RF08: O sistema deve emitir aviso sobre o vencimento da assinatura.
+RF09: O sistema deve permitir a geração de relatório de pagamentos.
+RF10: O sistema deve permitir login e senha para acesso ao aplicativo.
+RF11: O sistema deve permitir troca de mensagens entre cuidadores e contratantes via chat.
+RF12: O sistema deve permitir que cuidadores, enfermeiros e contratantes avaliem-se mutuamente com notas de 1 a 5 estrelas após um atendimento.
+RF13: O sistema deve permitir a busca de cuidadores e enfermeiros com filtros avançados, incluindo :( disponibilidade por hora, dia, semana ou mês, cidade)
+
+
+2. Requisitos Não Funcionais (RNF)
+
+RNF01: O sistema não pode ficar indisponível por mais de 10 minutos.
+RNF02: O sistema deve ser de fácil usabilidade e navegação intuitiva.
+RNF03: O sistema deve armazenar dados de forma segura, usando criptografia.
+RNF04: O sistema deve cumprir integralmente a LGPD.
+RNF05: O sistema deve funcionar em dispositivos Android e iOS.
+RNF06: O sistema deve utilizar um banco de dados SQL.
+RNF07: O sistema deve operar em uma plataforma de hospedagem PaaS.
+RNF08: O sistema deve apresentar tempo de resposta adequado.
+
+3. Regras de Negócio (RN)
+
+RN01: O sistema deve indicar claramente o papel de cada usuário (cuidador, enfermeiro, contratante, empresa).
+RN02: A avaliação por estrelas só pode ser realizada após a conclusão de um atendimento.
+RN03: Todos os usuários devem pagar a assinatura mensal ou anual para manter o perfil ativo.
+RN04: Perfis com pagamento atrasado devem ser automaticamente ocultados até a regularização.
+RN05: O aplicativo não se responsabiliza pela qualidade ou veracidade dos serviços prestados.
+RN06: O aplicativo poderá remover perfis que violem os termos de uso ou que recebam denúncias comprovadas.
+RN07: O aplicativo não intermedia pagamentos entre contratantes, cuidadores e enfermeiros.
+RN08: Cuidadores e enfermeiros devem informar seus valores de serviço para que seus perfis sejam exibidos nas buscas.
+
+
+ 
