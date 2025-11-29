@@ -12,6 +12,7 @@ import { useRoute, RouteProp } from "@react-navigation/native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useData } from "@/context/DataContext";
@@ -26,6 +27,7 @@ export default function ChatDetailScreen() {
   const route = useRoute<RouteProps>();
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
+  const tabBarHeight = useBottomTabBarHeight();
   const { getMessages, sendMessage } = useData();
   const { user } = useAuth();
 
@@ -136,7 +138,7 @@ export default function ChatDetailScreen() {
         }
       />
 
-      <View style={[styles.inputContainer, { paddingBottom: insets.bottom || Spacing.md }]}>
+      <View style={[styles.inputContainer, { paddingBottom: tabBarHeight + Spacing.sm }]}>
         <View style={styles.inputWrapper}>
           <TextInput
             style={styles.input}
