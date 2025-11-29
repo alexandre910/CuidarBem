@@ -347,7 +347,7 @@ export default function SubscriptionScreen() {
                   <Feather
                     name="smartphone"
                     size={24}
-                    color={paymentMethod === "pix" ? Colors.light.primary : "#666666"}
+                    color={paymentMethod === "pix" ? "#942B18" : "#666666"}
                   />
                   <ThemedText
                     type="body"
@@ -370,7 +370,7 @@ export default function SubscriptionScreen() {
                   <Feather
                     name="credit-card"
                     size={24}
-                    color={paymentMethod === "cartao" ? Colors.light.primary : "#666666"}
+                    color={paymentMethod === "cartao" ? "#942B18" : "#666666"}
                   />
                   <ThemedText
                     type="body"
@@ -678,14 +678,14 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   paymentMethodSelected: {
-    borderColor: Colors.light.primary,
+    borderColor: "#942B18",
     backgroundColor: Colors.light.backgroundRoot,
   },
   paymentMethodText: {
     color: "#666666",
   },
   paymentMethodTextSelected: {
-    color: Colors.light.primary,
+    color: "#942B18",
     fontWeight: "600",
   },
   formSection: {
