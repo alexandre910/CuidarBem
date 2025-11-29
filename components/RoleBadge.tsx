@@ -13,7 +13,7 @@ interface RoleBadgeProps {
 
 export function RoleBadge({ role, style, size = "small" }: RoleBadgeProps) {
   const backgroundColor = RoleColors[role];
-  const textColor = role === "enfermeiro" || role === "empresa" ? "#FFFFFF" : "#000000";
+  const textColor = role === "enfermeiro" || role === "empresa" || role === "contratante" ? "#FFFFFF" : "#000000";
 
   return (
     <View
