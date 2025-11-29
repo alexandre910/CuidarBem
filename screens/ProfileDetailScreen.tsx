@@ -88,7 +88,10 @@ export default function ProfileDetailScreen() {
 
     const conversationId = await startConversation(profile.id);
     if (conversationId) {
-      navigation.navigate("Chat" as any, { conversationId });
+      navigation.navigate("Chat" as any, {
+        screen: "ChatDetail",
+        params: { conversationId },
+      });
     }
   };
 
