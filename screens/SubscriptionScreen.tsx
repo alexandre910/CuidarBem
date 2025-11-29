@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Pressable, Alert } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Pressable,
+  Alert,
+  Modal,
+  TextInput,
+  ScrollView,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
 
 import { ScreenScrollView } from "@/components/ScreenScrollView";
@@ -38,15 +46,89 @@ const plans = [
   },
 ];
 
+type PaymentMethod = "pix" | "cartao";
+type PixKeyType = "cpf" | "email" | "celular" | "aleatoria";
+
 export default function SubscriptionScreen() {
   const { user, subscription, updateSubscription } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [paymentModal, setPaymentModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("pix");
+  const [pixKeyType, setPixKeyType] = useState<PixKeyType>("cpf");
+  const [pixKey, setPixKey] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardCvv, setCardCvv] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardName, setCardName] = useState("");
 
-  const handleSubscribe = async (planId: string) => {
+  const resetPaymentForm = () => {
+    setPaymentMethod("pix");
+    setPixKeyType("cpf");
+    setPixKey("");
+    setCardNumber("");
+    setCardCvv("");
+    setCardExpiry("");
+    setCardName("");
+  };
+
+  const openPaymentModal = () => {
+    if (!selectedPlan) {
+      Alert.alert("Atenção", "Por favor, selecione um plano primeiro.");
+      return;
+    }
+    resetPaymentForm();
+    setPaymentModal(true);
+  };
+
+  const validatePayment = (): boolean => {
+    if (paymentMethod === "pix") {
+      if (!pixKey.trim()) {
+        Alert.alert("Atenção", "Por favor, insira sua chave PIX.");
+        return false;
+      }
+      if (pixKeyType === "cpf" && pixKey.replace(/\D/g, "").length !== 11) {
+        Alert.alert("Atenção", "CPF deve conter 11 dígitos.");
+        return false;
+      }
+      if (pixKeyType === "email" && !pixKey.includes("@")) {
+        Alert.alert("Atenção", "Por favor, insira um e-mail válido.");
+        return false;
+      }
+      if (pixKeyType === "celular" && pixKey.replace(/\D/g, "").length < 10) {
+        Alert.alert("Atenção", "Número de celular inválido.");
+        return false;
+      }
+    } else {
+      const cleanCardNumber = cardNumber.replace(/\D/g, "");
+      if (cleanCardNumber.length !== 16) {
+        Alert.alert("Atenção", "O número do cartão deve conter 16 dígitos.");
+        return false;
+      }
+      if (cardCvv.length < 3) {
+        Alert.alert("Atenção", "CVV deve conter 3 ou 4 dígitos.");
+        return false;
+      }
+      if (!cardExpiry.includes("/") || cardExpiry.length < 5) {
+        Alert.alert("Atenção", "Data de vencimento inválida. Use o formato MM/AA.");
+        return false;
+      }
+      if (!cardName.trim()) {
+        Alert.alert("Atenção", "Por favor, insira o nome completo do titular.");
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!validatePayment()) return;
+    if (!selectedPlan) return;
+
     setProcessing(true);
+    setPaymentModal(false);
 
-    const plan = plans.find((p) => p.id === planId);
+    const plan = plans.find((p) => p.id === selectedPlan);
     if (!plan || !user) {
       setProcessing(false);
       return;
@@ -54,7 +136,7 @@ export default function SubscriptionScreen() {
 
     const now = new Date();
     const expirationDate = new Date();
-    if (planId === "mensal") {
+    if (selectedPlan === "mensal") {
       expirationDate.setMonth(expirationDate.getMonth() + 1);
     } else {
       expirationDate.setFullYear(expirationDate.getFullYear() + 1);
@@ -63,7 +145,7 @@ export default function SubscriptionScreen() {
     const newSubscription: Subscription = {
       id: `sub_${Date.now()}`,
       userId: user.id,
-      tipo: planId as "mensal" | "anual",
+      tipo: selectedPlan as "mensal" | "anual",
       status: "ativo",
       dataInicio: now.toISOString(),
       dataVencimento: expirationDate.toISOString(),
@@ -73,14 +155,60 @@ export default function SubscriptionScreen() {
     await updateSubscription(newSubscription);
     setProcessing(false);
 
+    const paymentMethodLabel = paymentMethod === "pix" ? "PIX" : "Cartão de Crédito";
     Alert.alert(
       "Assinatura Ativada",
-      `Seu ${plan.title} foi ativado com sucesso! Válido até ${expirationDate.toLocaleDateString("pt-BR")}.`
+      `Seu ${plan.title} foi ativado com sucesso via ${paymentMethodLabel}! Válido até ${expirationDate.toLocaleDateString("pt-BR")}.`
     );
+  };
+
+  const formatCardNumber = (text: string) => {
+    const cleaned = text.replace(/\D/g, "").slice(0, 16);
+    const formatted = cleaned.replace(/(\d{4})/g, "$1 ").trim();
+    setCardNumber(formatted);
+  };
+
+  const formatExpiry = (text: string) => {
+    const cleaned = text.replace(/\D/g, "").slice(0, 4);
+    if (cleaned.length >= 2) {
+      setCardExpiry(`${cleaned.slice(0, 2)}/${cleaned.slice(2)}`);
+    } else {
+      setCardExpiry(cleaned);
+    }
   };
 
   const formatPrice = (price: number) => {
     return `R$ ${price.toFixed(2).replace(".", ",")}`;
+  };
+
+  const getPixKeyPlaceholder = () => {
+    switch (pixKeyType) {
+      case "cpf":
+        return "000.000.000-00";
+      case "email":
+        return "seu@email.com";
+      case "celular":
+        return "(00) 00000-0000";
+      case "aleatoria":
+        return "Chave aleatória";
+      default:
+        return "";
+    }
+  };
+
+  const getPixKeyLabel = () => {
+    switch (pixKeyType) {
+      case "cpf":
+        return "CPF";
+      case "email":
+        return "E-mail";
+      case "celular":
+        return "Celular";
+      case "aleatoria":
+        return "Chave Aleatória";
+      default:
+        return "";
+    }
   };
 
   return (
@@ -177,7 +305,7 @@ export default function SubscriptionScreen() {
       ))}
 
       <Button
-        onPress={() => selectedPlan && handleSubscribe(selectedPlan)}
+        onPress={openPaymentModal}
         loading={processing}
         disabled={!selectedPlan || subscription?.status === "ativo"}
         style={styles.subscribeButton}
@@ -191,6 +319,190 @@ export default function SubscriptionScreen() {
         Pagamento processado de forma segura. Você pode cancelar a qualquer
         momento. Ao assinar, você concorda com nossos Termos de Uso.
       </ThemedText>
+
+      <Modal
+        visible={paymentModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setPaymentModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <ThemedText type="h4">Forma de Pagamento</ThemedText>
+              <Pressable onPress={() => setPaymentModal(false)}>
+                <Feather name="x" size={24} color={Colors.light.text} />
+              </Pressable>
+            </View>
+
+            <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+              <View style={styles.paymentMethodSelector}>
+                <Pressable
+                  style={[
+                    styles.paymentMethodOption,
+                    paymentMethod === "pix" && styles.paymentMethodSelected,
+                  ]}
+                  onPress={() => setPaymentMethod("pix")}
+                >
+                  <Feather
+                    name="smartphone"
+                    size={24}
+                    color={paymentMethod === "pix" ? Colors.light.primary : "#666666"}
+                  />
+                  <ThemedText
+                    type="body"
+                    style={[
+                      styles.paymentMethodText,
+                      paymentMethod === "pix" && styles.paymentMethodTextSelected,
+                    ]}
+                  >
+                    PIX
+                  </ThemedText>
+                </Pressable>
+
+                <Pressable
+                  style={[
+                    styles.paymentMethodOption,
+                    paymentMethod === "cartao" && styles.paymentMethodSelected,
+                  ]}
+                  onPress={() => setPaymentMethod("cartao")}
+                >
+                  <Feather
+                    name="credit-card"
+                    size={24}
+                    color={paymentMethod === "cartao" ? Colors.light.primary : "#666666"}
+                  />
+                  <ThemedText
+                    type="body"
+                    style={[
+                      styles.paymentMethodText,
+                      paymentMethod === "cartao" && styles.paymentMethodTextSelected,
+                    ]}
+                  >
+                    Cartão de Crédito
+                  </ThemedText>
+                </Pressable>
+              </View>
+
+              {paymentMethod === "pix" ? (
+                <View style={styles.formSection}>
+                  <ThemedText type="body" style={styles.formLabel}>
+                    Tipo de Chave PIX
+                  </ThemedText>
+                  <View style={styles.pixKeyTypeSelector}>
+                    {(["cpf", "email", "celular", "aleatoria"] as PixKeyType[]).map((type) => (
+                      <Pressable
+                        key={type}
+                        style={[
+                          styles.pixKeyTypeOption,
+                          pixKeyType === type && styles.pixKeyTypeSelected,
+                        ]}
+                        onPress={() => {
+                          setPixKeyType(type);
+                          setPixKey("");
+                        }}
+                      >
+                        <ThemedText
+                          type="caption"
+                          style={[
+                            styles.pixKeyTypeText,
+                            pixKeyType === type && styles.pixKeyTypeTextSelected,
+                          ]}
+                        >
+                          {type === "cpf" ? "CPF" : type === "email" ? "E-mail" : type === "celular" ? "Celular" : "Aleatória"}
+                        </ThemedText>
+                      </Pressable>
+                    ))}
+                  </View>
+
+                  <ThemedText type="body" style={styles.formLabel}>
+                    {getPixKeyLabel()}
+                  </ThemedText>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={getPixKeyPlaceholder()}
+                    placeholderTextColor="#999999"
+                    value={pixKey}
+                    onChangeText={setPixKey}
+                    keyboardType={pixKeyType === "cpf" || pixKeyType === "celular" ? "numeric" : "default"}
+                    autoCapitalize="none"
+                  />
+                </View>
+              ) : (
+                <View style={styles.formSection}>
+                  <ThemedText type="body" style={styles.formLabel}>
+                    Número do Cartão
+                  </ThemedText>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="0000 0000 0000 0000"
+                    placeholderTextColor="#999999"
+                    value={cardNumber}
+                    onChangeText={formatCardNumber}
+                    keyboardType="numeric"
+                    maxLength={19}
+                  />
+
+                  <View style={styles.rowInputs}>
+                    <View style={styles.halfInput}>
+                      <ThemedText type="body" style={styles.formLabel}>
+                        Data de Vencimento
+                      </ThemedText>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="MM/AA"
+                        placeholderTextColor="#999999"
+                        value={cardExpiry}
+                        onChangeText={formatExpiry}
+                        keyboardType="numeric"
+                        maxLength={5}
+                      />
+                    </View>
+                    <View style={styles.halfInput}>
+                      <ThemedText type="body" style={styles.formLabel}>
+                        CVV
+                      </ThemedText>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="000"
+                        placeholderTextColor="#999999"
+                        value={cardCvv}
+                        onChangeText={(text) => setCardCvv(text.replace(/\D/g, "").slice(0, 4))}
+                        keyboardType="numeric"
+                        maxLength={4}
+                        secureTextEntry
+                      />
+                    </View>
+                  </View>
+
+                  <ThemedText type="body" style={styles.formLabel}>
+                    Nome Completo (como no cartão)
+                  </ThemedText>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="NOME COMPLETO"
+                    placeholderTextColor="#999999"
+                    value={cardName}
+                    onChangeText={setCardName}
+                    autoCapitalize="characters"
+                  />
+                </View>
+              )}
+
+              <View style={styles.totalSection}>
+                <ThemedText type="body">Total a pagar:</ThemedText>
+                <ThemedText type="h4" style={styles.totalPrice}>
+                  {selectedPlan ? formatPrice(plans.find((p) => p.id === selectedPlan)?.price || 0) : "R$ 0,00"}
+                </ThemedText>
+              </View>
+
+              <Button onPress={handleConfirmPayment} style={styles.confirmButton}>
+                OK
+              </Button>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </ScreenScrollView>
   );
 }
@@ -324,6 +636,122 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#999999",
     paddingHorizontal: Spacing.xl,
+    marginBottom: Spacing.xl,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: Colors.light.backgroundRoot,
+    borderTopLeftRadius: BorderRadius.xl,
+    borderTopRightRadius: BorderRadius.xl,
+    maxHeight: "90%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.light.border,
+  },
+  modalScroll: {
+    padding: Spacing.lg,
+  },
+  paymentMethodSelector: {
+    flexDirection: "row",
+    gap: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  paymentMethodOption: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    borderWidth: 2,
+    borderColor: Colors.light.border,
+    backgroundColor: Colors.light.backgroundDefault,
+    gap: Spacing.sm,
+  },
+  paymentMethodSelected: {
+    borderColor: Colors.light.primary,
+    backgroundColor: Colors.light.backgroundRoot,
+  },
+  paymentMethodText: {
+    color: "#666666",
+  },
+  paymentMethodTextSelected: {
+    color: Colors.light.primary,
+    fontWeight: "600",
+  },
+  formSection: {
+    marginBottom: Spacing.lg,
+  },
+  formLabel: {
+    marginBottom: Spacing.sm,
+    fontWeight: "500",
+  },
+  input: {
+    backgroundColor: Colors.light.backgroundDefault,
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    fontSize: 16,
+    color: Colors.light.text,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    marginBottom: Spacing.md,
+  },
+  pixKeyTypeSelector: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  pixKeyTypeOption: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    backgroundColor: Colors.light.backgroundDefault,
+  },
+  pixKeyTypeSelected: {
+    borderColor: Colors.light.primary,
+    backgroundColor: Colors.light.primary,
+  },
+  pixKeyTypeText: {
+    color: "#666666",
+  },
+  pixKeyTypeTextSelected: {
+    color: Colors.light.buttonText,
+    fontWeight: "600",
+  },
+  rowInputs: {
+    flexDirection: "row",
+    gap: Spacing.md,
+  },
+  halfInput: {
+    flex: 1,
+  },
+  totalSection: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: Spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: Colors.light.border,
+    marginTop: Spacing.md,
+  },
+  totalPrice: {
+    color: Colors.light.primary,
+  },
+  confirmButton: {
+    marginTop: Spacing.md,
     marginBottom: Spacing.xl,
   },
 });
