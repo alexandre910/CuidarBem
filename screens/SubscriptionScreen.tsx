@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   planPrice: {
-    color: Colors.light.primary,
+    color: "#000000",
   },
   planPeriod: {
     color: "#666666",
