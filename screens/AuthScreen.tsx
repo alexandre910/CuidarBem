@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   tagline: {
-    color: Colors.light.primary,
+    color: "#942B18",
     fontWeight: "600",
     marginBottom: Spacing.md,
   },
