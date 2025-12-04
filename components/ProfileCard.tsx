@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.light.border,
   },
   availabilityLabel: {
-    color: "#666666",
+    color: "#000000",
     marginBottom: Spacing.xs,
   },
   availabilityTags: {
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   priceLabel: {
-    color: "#666666",
+    color: "#000000",
     marginBottom: Spacing.xs,
   },
   priceValue: {
