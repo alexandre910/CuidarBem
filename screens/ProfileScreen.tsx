@@ -23,7 +23,6 @@ type NavigationProp = NativeStackNavigationProp<ProfileStackParamList>;
 const availabilityOptions: { value: AvailabilityType; label: string }[] = [
   { value: "hora", label: "Hora" },
   { value: "dia", label: "Dia" },
-  { value: "semana", label: "Semana" },
   { value: "mes", label: "Mês" },
 ];
 
