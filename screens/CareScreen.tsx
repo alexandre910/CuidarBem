@@ -25,7 +25,7 @@ const categoryConfig: Record<
   { title: string; icon: keyof typeof Feather.glyphMap; color: string }
 > = {
   medicamento: { title: "Medicamentos", icon: "activity", color: Colors.light.accent1 },
-  refeicao: { title: "Refeições", icon: "coffee", color: Colors.light.primary },
+  refeicao: { title: "Refeições", icon: "coffee", color: "#942B18" },
   consulta: { title: "Consultas", icon: "calendar", color: Colors.light.accent2 },
   exercicio: { title: "Exercícios", icon: "heart", color: Colors.light.accent1 },
 };
