@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
   },
   description: {
     textAlign: "center",
-    color: "#666666",
+    color: "#000000",
     paddingHorizontal: Spacing.xl,
   },
   form: {
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.xl,
   },
   switchModeText: {
-    color: "#666666",
+    color: "#000000",
     marginRight: Spacing.xs,
   },
   switchModeLink: {
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   },
   lgpdText: {
     textAlign: "center",
-    color: "#999999",
+    color: "#000000",
     marginTop: Spacing["2xl"],
     paddingHorizontal: Spacing.xl,
   },
