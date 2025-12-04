@@ -260,17 +260,41 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       const convIndex = conversations.findIndex((c) => c.id === conversationId);
       if (convIndex !== -1) {
-        const updatedConversations = [...conversations];
-        updatedConversations[convIndex] = {
-          ...updatedConversations[convIndex],
+        const currentConv = conversations[convIndex];
+        const updatedConv = {
+          ...currentConv,
           lastMessage: message,
           updatedAt: message.timestamp,
         };
+        
+        const updatedConversations = [...conversations];
+        updatedConversations[convIndex] = updatedConv;
         setConversations(updatedConversations);
         await AsyncStorage.setItem(
           `${STORAGE_KEYS.CONVERSATIONS}:${user.id}`,
           JSON.stringify(updatedConversations)
         );
+
+        // Also update conversation for the other participant
+        const otherUserId = currentConv.participants.find((p) => p !== user.id);
+        if (otherUserId) {
+          try {
+            const otherStoredConvs = await AsyncStorage.getItem(`${STORAGE_KEYS.CONVERSATIONS}:${otherUserId}`);
+            if (otherStoredConvs) {
+              const otherConversations: Conversation[] = JSON.parse(otherStoredConvs);
+              const otherConvIndex = otherConversations.findIndex((c) => c.id === conversationId);
+              if (otherConvIndex !== -1) {
+                otherConversations[otherConvIndex] = updatedConv;
+                await AsyncStorage.setItem(
+                  `${STORAGE_KEYS.CONVERSATIONS}:${otherUserId}`,
+                  JSON.stringify(otherConversations)
+                );
+              }
+            }
+          } catch (error) {
+            console.error("Error updating conversation for other user:", error);
+          }
+        }
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -298,6 +322,27 @@ export function DataProvider({ children }: { children: ReactNode }) {
       `${STORAGE_KEYS.CONVERSATIONS}:${user.id}`,
       JSON.stringify(updatedConversations)
     );
+
+    // Also save conversation for the recipient
+    try {
+      const recipientStoredConvs = await AsyncStorage.getItem(`${STORAGE_KEYS.CONVERSATIONS}:${recipientId}`);
+      const recipientConversations: Conversation[] = recipientStoredConvs ? JSON.parse(recipientStoredConvs) : [];
+      
+      // Check if recipient already has this conversation
+      const recipientHasConv = recipientConversations.find(
+        (c) => c.participants.includes(user.id) && c.participants.includes(recipientId)
+      );
+      
+      if (!recipientHasConv) {
+        recipientConversations.push(newConversation);
+        await AsyncStorage.setItem(
+          `${STORAGE_KEYS.CONVERSATIONS}:${recipientId}`,
+          JSON.stringify(recipientConversations)
+        );
+      }
+    } catch (error) {
+      console.error("Error saving conversation for recipient:", error);
+    }
 
     return newConversation.id;
   };
