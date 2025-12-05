@@ -41,6 +41,7 @@ export default function ProfileDetailScreen() {
   const { user, subscription } = useAuth();
   const [reportModal, setReportModal] = useState(false);
   const [ratingModal, setRatingModal] = useState(false);
+  const [confirmServiceModal, setConfirmServiceModal] = useState(false);
   const [selectedReason, setSelectedReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
   const [selectedRating, setSelectedRating] = useState(0);
@@ -141,8 +142,15 @@ export default function ProfileDetailScreen() {
   };
 
   const handleOpenRatingModal = () => {
-    setSelectedRating(currentUserRating || 0);
-    setRatingModal(true);
+    setConfirmServiceModal(true);
+  };
+
+  const handleConfirmService = (confirmed: boolean) => {
+    setConfirmServiceModal(false);
+    if (confirmed) {
+      setSelectedRating(currentUserRating || 0);
+      setRatingModal(true);
+    }
   };
 
   const favorited = isFavorite(profile.id);
@@ -364,6 +372,40 @@ export default function ProfileDetailScreen() {
                 <ThemedText type="body" style={styles.submitButtonText}>
                   Enviar
                 </ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={confirmServiceModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setConfirmServiceModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ThemedText type="subtitle" style={styles.modalTitle}>
+              Serviço Concluído?
+            </ThemedText>
+
+            <ThemedText type="body" style={styles.confirmServiceText}>
+              O serviço com {profile.nome} foi concluído?
+            </ThemedText>
+
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={styles.confirmNoButton}
+                onPress={() => handleConfirmService(false)}
+              >
+                <ThemedText type="body" style={styles.confirmNoButtonText}>Não</ThemedText>
+              </Pressable>
+              <Pressable
+                style={styles.confirmYesButton}
+                onPress={() => handleConfirmService(true)}
+              >
+                <ThemedText type="body" style={styles.submitButtonText}>Sim</ThemedText>
               </Pressable>
             </View>
           </View>
@@ -685,6 +727,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   ratingSubmitButton: {
+    flex: 1,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.light.primary,
+    alignItems: "center",
+  },
+  confirmServiceText: {
+    textAlign: "center",
+    marginBottom: Spacing.xl,
+    color: "#333333",
+  },
+  confirmNoButton: {
+    flex: 1,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: "#CCCCCC",
+    alignItems: "center",
+  },
+  confirmNoButtonText: {
+    color: "#333333",
+    fontWeight: "600",
+  },
+  confirmYesButton: {
     flex: 1,
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
