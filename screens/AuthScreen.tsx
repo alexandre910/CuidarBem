@@ -361,6 +361,15 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: Spacing.md,
+    borderBottomWidth: 4,
+    borderBottomColor: "#00B3A3",
+    borderRightWidth: 2,
+    borderRightColor: "#00D4C4",
+    shadowColor: "#000000",
+    shadowOffset: { width: 2, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 8,
   },
   switchModeContainer: {
     flexDirection: "row",
