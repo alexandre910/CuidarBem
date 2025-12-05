@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { StyleSheet, Pressable, ViewStyle, StyleProp, ActivityIndicator } from "react-native";
+import { StyleSheet, Pressable, ViewStyle, StyleProp, ActivityIndicator, TextStyle } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -17,6 +17,7 @@ interface ButtonProps {
   onPress?: () => void;
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
   disabled?: boolean;
   loading?: boolean;
   variant?: ButtonVariant;
@@ -37,6 +38,7 @@ export function Button({
   onPress,
   children,
   style,
+  textStyle,
   disabled = false,
   loading = false,
   variant = "primary",
@@ -126,7 +128,7 @@ export function Button({
           {icon}
           <ThemedText
             type="body"
-            style={[styles.buttonText, { color: getTextColor() }, icon ? styles.textWithIcon : null]}
+            style={[styles.buttonText, { color: getTextColor() }, icon ? styles.textWithIcon : null, textStyle]}
           >
             {children}
           </ThemedText>

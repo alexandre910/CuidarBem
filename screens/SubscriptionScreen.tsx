@@ -309,6 +309,7 @@ export default function SubscriptionScreen() {
         loading={processing}
         disabled={!selectedPlan || subscription?.status === "ativo"}
         style={styles.subscribeButton}
+        textStyle={subscription?.status === "ativo" ? { color: "#000000" } : undefined}
       >
         {subscription?.status === "ativo"
           ? "Você já possui assinatura ativa"
