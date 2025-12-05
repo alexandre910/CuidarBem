@@ -68,7 +68,7 @@ export function Input({
             (rightIcon || isPassword) ? styles.inputWithRightIcon : null,
             style,
           ]}
-          placeholderTextColor="#999999"
+          placeholderTextColor={Colors.light.text}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           secureTextEntry={isPassword && !showPassword}
