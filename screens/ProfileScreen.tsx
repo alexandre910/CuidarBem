@@ -401,9 +401,9 @@ export default function ProfileScreen() {
         variant="text"
         onPress={handleLogout}
         style={styles.logoutButton}
-        icon={<Feather name="log-out" size={18} color={Colors.light.error} />}
+        icon={<Feather name="log-out" size={18} color="#942B18" />}
       >
-        <ThemedText style={{ color: Colors.light.error }}>Sair da Conta</ThemedText>
+        <ThemedText style={{ color: "#942B18", fontWeight: "600" }}>Sair da Conta</ThemedText>
       </Button>
     </ScreenKeyboardAwareScrollView>
   );
