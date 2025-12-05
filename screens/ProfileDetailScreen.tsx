@@ -464,7 +464,7 @@ export default function ProfileDetailScreen() {
                 onPress={handleSubmitRating}
                 disabled={selectedRating === 0}
               >
-                <ThemedText type="body" style={styles.submitButtonText}>
+                <ThemedText type="body" style={styles.confirmYesButtonText}>
                   OK
                 </ThemedText>
               </Pressable>
