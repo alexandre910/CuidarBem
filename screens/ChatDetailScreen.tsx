@@ -5,7 +5,6 @@ import {
   FlatList,
   TextInput,
   Pressable,
-  KeyboardAvoidingView,
   Platform,
 } from "react-native";
 import { useRoute, RouteProp } from "@react-navigation/native";
@@ -13,6 +12,11 @@ import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import {
+  KeyboardAvoidingView,
+  useReanimatedKeyboardAnimation,
+} from "react-native-keyboard-controller";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useData } from "@/context/DataContext";
@@ -30,11 +34,20 @@ export default function ChatDetailScreen() {
   const tabBarHeight = useBottomTabBarHeight();
   const { getMessages, sendMessage } = useData();
   const { user } = useAuth();
+  const { height: keyboardHeight } = useReanimatedKeyboardAnimation();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+
+  const inputContainerStyle = useAnimatedStyle(() => {
+    return {
+      paddingBottom: Platform.OS === "web" 
+        ? tabBarHeight + Spacing.sm 
+        : Math.max(-keyboardHeight.value, tabBarHeight + Spacing.sm),
+    };
+  });
 
   useEffect(() => {
     loadMessages();
@@ -113,7 +126,7 @@ export default function ChatDetailScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior="padding"
       keyboardVerticalOffset={headerHeight}
     >
       <FlatList
@@ -138,7 +151,7 @@ export default function ChatDetailScreen() {
         }
       />
 
-      <View style={[styles.inputContainer, { paddingBottom: tabBarHeight + Spacing.sm }]}>
+      <Animated.View style={[styles.inputContainer, inputContainerStyle]}>
         <View style={styles.inputWrapper}>
           <TextInput
             style={styles.input}
@@ -164,7 +177,7 @@ export default function ChatDetailScreen() {
             />
           </Pressable>
         </View>
-      </View>
+      </Animated.View>
     </KeyboardAvoidingView>
   );
 }
