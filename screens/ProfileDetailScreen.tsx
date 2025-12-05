@@ -405,7 +405,7 @@ export default function ProfileDetailScreen() {
                 style={styles.confirmYesButton}
                 onPress={() => handleConfirmService(true)}
               >
-                <ThemedText type="body" style={styles.submitButtonText}>Sim</ThemedText>
+                <ThemedText type="body" style={styles.confirmYesButtonText}>Sim</ThemedText>
               </Pressable>
             </View>
           </View>
@@ -756,5 +756,9 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     backgroundColor: Colors.light.primary,
     alignItems: "center",
+  },
+  confirmYesButtonText: {
+    color: "#000000",
+    fontWeight: "600",
   },
 });
