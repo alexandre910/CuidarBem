@@ -173,7 +173,7 @@ export default function ProfileScreen() {
         <Pressable onPress={pickImage} style={styles.photoContainer}>
           <Avatar uri={foto} size={120} role={user?.role} />
           <View style={styles.editPhotoButton}>
-            <Feather name="camera" size={16} color="#FFFFFF" />
+            <Feather name="camera" size={16} color="#000000" />
           </View>
         </Pressable>
         <RoleBadge role={user?.role || "contratante"} size="medium" style={styles.roleBadge} />
