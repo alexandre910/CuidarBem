@@ -17,7 +17,7 @@ type NavigationProp = NativeStackNavigationProp<ChatStackParamList>;
 
 export default function ConversationsScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const { conversations, getUserById } = useData();
+  const { conversations, getUserById, deleteConversation } = useData();
   const { user } = useAuth();
   const { paddingTop, paddingBottom } = useScreenInsets();
 
@@ -37,11 +37,16 @@ export default function ConversationsScreen() {
     return undefined;
   };
 
+  const handleDeleteConversation = (conversationId: string) => {
+    deleteConversation(conversationId);
+  };
+
   const renderItem = ({ item }: { item: Conversation }) => (
     <ConversationItem
       conversation={item}
       otherUser={getOtherUser(item)}
       onPress={() => handleConversationPress(item)}
+      onDelete={() => handleDeleteConversation(item.id)}
       hasUnread={
         item.lastMessage
           ? !item.lastMessage.read && item.lastMessage.senderId !== user?.id

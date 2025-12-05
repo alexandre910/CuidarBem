@@ -28,6 +28,7 @@ interface DataContextType {
   getMessages: (conversationId: string) => Promise<Message[]>;
   sendMessage: (conversationId: string, text: string) => Promise<void>;
   startConversation: (recipientId: string) => Promise<string>;
+  deleteConversation: (conversationId: string) => Promise<void>;
   loadConversations: () => Promise<void>;
   updateCuidados: (data: Partial<CuidadoPaciente>) => Promise<void>;
   addMedicamento: (med: Omit<Medicamento, "id">) => Promise<void>;
@@ -362,6 +363,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return newConversation.id;
   };
 
+  const deleteConversation = async (conversationId: string) => {
+    if (!user) return;
+    try {
+      const updatedConversations = conversations.filter((c) => c.id !== conversationId);
+      setConversations(updatedConversations);
+      await AsyncStorage.setItem(
+        `${STORAGE_KEYS.CONVERSATIONS}:${user.id}`,
+        JSON.stringify(updatedConversations)
+      );
+
+      // Also delete messages for this conversation
+      await AsyncStorage.removeItem(`${STORAGE_KEYS.MESSAGES}:${conversationId}`);
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+    }
+  };
+
   const updateCuidados = async (data: Partial<CuidadoPaciente>) => {
     if (!user || !cuidados) return;
     const updated = { ...cuidados, ...data };
@@ -633,6 +651,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         getMessages,
         sendMessage,
         startConversation,
+        deleteConversation,
         loadConversations,
         updateCuidados,
         addMedicamento,

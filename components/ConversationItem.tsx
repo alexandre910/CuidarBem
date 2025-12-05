@@ -6,6 +6,7 @@ import Animated, {
   withSpring,
   WithSpringConfig,
 } from "react-native-reanimated";
+import { Feather } from "@expo/vector-icons";
 
 import { ThemedText } from "@/components/ThemedText";
 import { Avatar } from "@/components/Avatar";
@@ -17,6 +18,7 @@ interface ConversationItemProps {
   conversation: Conversation;
   otherUser?: UserProfile;
   onPress: () => void;
+  onDelete?: () => void;
   hasUnread?: boolean;
 }
 
@@ -34,6 +36,7 @@ export function ConversationItem({
   conversation,
   otherUser,
   onPress,
+  onDelete,
   hasUnread = false,
 }: ConversationItemProps) {
   const scale = useSharedValue(1);
@@ -108,6 +111,16 @@ export function ConversationItem({
           {conversation.lastMessage?.text || "Iniciar conversa..."}
         </ThemedText>
       </View>
+
+      {onDelete ? (
+        <Pressable
+          onPress={onDelete}
+          style={styles.deleteButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Feather name="trash-2" size={20} color="#DC4429" />
+        </Pressable>
+      ) : null}
     </AnimatedPressable>
   );
 }
@@ -166,5 +179,10 @@ const styles = StyleSheet.create({
   previewUnread: {
     fontWeight: "600",
     color: Colors.light.text,
+  },
+  deleteButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingLeft: Spacing.md,
   },
 });
