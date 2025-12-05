@@ -42,10 +42,12 @@ export default function ChatDetailScreen() {
   const flatListRef = useRef<FlatList>(null);
 
   const inputContainerStyle = useAnimatedStyle(() => {
+    const keyboardOffset = -keyboardHeight.value;
+    const adjustedOffset = keyboardOffset > 0 ? keyboardOffset * 0.5 : 0;
     return {
       paddingBottom: Platform.OS === "web" 
         ? tabBarHeight + Spacing.sm 
-        : Math.max(-keyboardHeight.value, tabBarHeight + Spacing.sm),
+        : Math.max(adjustedOffset, tabBarHeight + Spacing.sm),
     };
   });
 
