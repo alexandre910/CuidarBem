@@ -24,7 +24,6 @@ interface FilterModalProps {
 const availabilityOptions: { value: AvailabilityType; label: string }[] = [
   { value: "hora", label: "Por Hora" },
   { value: "dia", label: "Por Dia" },
-  { value: "semana", label: "Por Semana" },
   { value: "mes", label: "Por Mês" },
 ];
 

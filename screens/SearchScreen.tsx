@@ -10,9 +10,15 @@ import { ProfileCard } from "@/components/ProfileCard";
 import { FilterModal } from "@/components/FilterModal";
 import { useData } from "@/context/DataContext";
 import { useScreenInsets } from "@/hooks/useScreenInsets";
-import { Colors, Spacing } from "@/constants/theme";
-import { SearchFilters, Cuidador, Enfermeiro } from "@/types";
+import { Colors, Spacing, BorderRadius } from "@/constants/theme";
+import { SearchFilters, Cuidador, Enfermeiro, AvailabilityType } from "@/types";
 import { SearchStackParamList } from "@/navigation/SearchStackNavigator";
+
+const availabilityQuickFilters: { value: AvailabilityType; label: string }[] = [
+  { value: "hora", label: "Por Hora" },
+  { value: "dia", label: "Por Dia" },
+  { value: "mes", label: "Por Mês" },
+];
 
 type NavigationProp = NativeStackNavigationProp<SearchStackParamList>;
 
@@ -24,6 +30,7 @@ export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({});
+  const [selectedAvailability, setSelectedAvailability] = useState<AvailabilityType | null>(null);
 
   const filteredProfessionals = useMemo(() => {
     let results = searchProfessionals(filters);
@@ -37,8 +44,18 @@ export default function SearchScreen() {
       );
     }
 
+    if (selectedAvailability) {
+      results = results.filter((p) =>
+        p.disponibilidade.includes(selectedAvailability)
+      );
+    }
+
     return results.sort((a, b) => b.avaliacaoMedia - a.avaliacaoMedia);
-  }, [professionals, filters, searchQuery]);
+  }, [professionals, filters, searchQuery, selectedAvailability]);
+
+  const handleAvailabilityFilter = (value: AvailabilityType) => {
+    setSelectedAvailability(selectedAvailability === value ? null : value);
+  };
 
   const activeFiltersCount = Object.values(filters).filter(Boolean).length;
 
@@ -75,6 +92,29 @@ export default function SearchScreen() {
             </View>
           ) : null}
         </Pressable>
+      </View>
+
+      <View style={styles.availabilityFilters}>
+        {availabilityQuickFilters.map((option) => (
+          <Pressable
+            key={option.value}
+            onPress={() => handleAvailabilityFilter(option.value)}
+            style={[
+              styles.availabilityButton,
+              selectedAvailability === option.value && styles.availabilityButtonActive,
+            ]}
+          >
+            <ThemedText
+              type="small"
+              style={[
+                styles.availabilityText,
+                selectedAvailability === option.value && styles.availabilityTextActive,
+              ]}
+            >
+              {option.label}
+            </ThemedText>
+          </Pressable>
+        ))}
       </View>
 
       <FlatList
@@ -170,5 +210,31 @@ const styles = StyleSheet.create({
   emptySubtext: {
     marginTop: Spacing.xs,
     color: "#999999",
+  },
+  availabilityFilters: {
+    flexDirection: "row",
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.md,
+    gap: Spacing.sm,
+  },
+  availabilityButton: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    backgroundColor: Colors.light.backgroundDefault,
+  },
+  availabilityButtonActive: {
+    backgroundColor: Colors.light.primary,
+    borderColor: Colors.light.primary,
+  },
+  availabilityText: {
+    color: Colors.light.text,
+    fontWeight: "500",
+  },
+  availabilityTextActive: {
+    color: "#000000",
+    fontWeight: "600",
   },
 });
