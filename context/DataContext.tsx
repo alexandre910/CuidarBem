@@ -162,6 +162,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       loadFavorites();
       loadServiceHistory();
     } else {
+      // Clear all user-specific data on logout
+      setConversations([]);
+      setCuidados(null);
       setFavorites([]);
       setServiceHistory([]);
     }
@@ -191,11 +194,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     try {
       const stored = await AsyncStorage.getItem(`${STORAGE_KEYS.CONVERSATIONS}:${user.id}`);
-      if (stored) {
-        setConversations(JSON.parse(stored));
-      }
+      // Always set conversations - either from storage or empty array
+      setConversations(stored ? JSON.parse(stored) : []);
     } catch (error) {
       console.error("Error loading conversations:", error);
+      setConversations([]);
     }
   };
 
