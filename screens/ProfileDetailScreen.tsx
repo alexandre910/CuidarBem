@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -37,13 +37,25 @@ const REPORT_REASONS = [
 export default function ProfileDetailScreen() {
   const route = useRoute<RouteProps>();
   const navigation = useNavigation<NavigationProp>();
-  const { getUserById, startConversation, toggleFavorite, isFavorite, reportProfile } = useData();
-  const { subscription } = useAuth();
+  const { getUserById, startConversation, toggleFavorite, isFavorite, reportProfile, rateProfessional, getUserRating } = useData();
+  const { user, subscription } = useAuth();
   const [reportModal, setReportModal] = useState(false);
+  const [ratingModal, setRatingModal] = useState(false);
   const [selectedReason, setSelectedReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [currentUserRating, setCurrentUserRating] = useState<number | null>(null);
 
   const profile = getUserById(route.params.profileId) as Cuidador | Enfermeiro | undefined;
+  const isContratante = user?.role === "contratante";
+
+  useEffect(() => {
+    if (profile) {
+      const existingRating = getUserRating(profile.id);
+      setCurrentUserRating(existingRating);
+      setSelectedRating(existingRating || 0);
+    }
+  }, [profile]);
 
   if (!profile) {
     return (
@@ -114,6 +126,25 @@ export default function ProfileDetailScreen() {
     );
   };
 
+  const handleSubmitRating = async () => {
+    if (selectedRating === 0) {
+      Alert.alert("Erro", "Selecione uma avaliação de 1 a 5 estrelas.");
+      return;
+    }
+    await rateProfessional(profile.id, selectedRating);
+    setCurrentUserRating(selectedRating);
+    setRatingModal(false);
+    Alert.alert(
+      "Avaliação Enviada",
+      `Você avaliou ${profile.nome} com ${selectedRating} estrela${selectedRating > 1 ? "s" : ""}.`
+    );
+  };
+
+  const handleOpenRatingModal = () => {
+    setSelectedRating(currentUserRating || 0);
+    setRatingModal(true);
+  };
+
   const favorited = isFavorite(profile.id);
 
   return (
@@ -151,12 +182,22 @@ export default function ProfileDetailScreen() {
               {profile.cidade}
             </ThemedText>
           </View>
-          <StarRating
-            rating={profile.avaliacaoMedia}
-            totalRatings={profile.totalAvaliacoes}
-            size={20}
-            style={styles.rating}
-          />
+          <Pressable 
+            onPress={isContratante ? handleOpenRatingModal : undefined}
+            style={styles.ratingContainer}
+          >
+            <StarRating
+              rating={profile.avaliacaoMedia}
+              totalRatings={profile.totalAvaliacoes}
+              size={20}
+              style={styles.rating}
+            />
+            {isContratante ? (
+              <ThemedText type="caption" style={styles.ratingHint}>
+                {currentUserRating ? `Sua nota: ${currentUserRating}` : "Toque para avaliar"}
+              </ThemedText>
+            ) : null}
+          </Pressable>
         </View>
       </View>
 
@@ -322,6 +363,67 @@ export default function ProfileDetailScreen() {
               >
                 <ThemedText type="body" style={styles.submitButtonText}>
                   Enviar
+                </ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={ratingModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setRatingModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ThemedText type="subtitle" style={styles.modalTitle}>
+              Avaliar Profissional
+            </ThemedText>
+
+            <ThemedText type="body" style={styles.ratingProfileName}>
+              {profile.nome}
+            </ThemedText>
+
+            <View style={styles.ratingStarsContainer}>
+              <StarRating
+                rating={selectedRating}
+                size={40}
+                onRate={(rating) => setSelectedRating(rating)}
+                showCount={false}
+              />
+            </View>
+
+            <ThemedText type="caption" style={styles.ratingDescription}>
+              {selectedRating === 0 && "Toque nas estrelas para avaliar"}
+              {selectedRating === 1 && "Muito ruim"}
+              {selectedRating === 2 && "Ruim"}
+              {selectedRating === 3 && "Regular"}
+              {selectedRating === 4 && "Bom"}
+              {selectedRating === 5 && "Excelente"}
+            </ThemedText>
+
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={styles.cancelButton}
+                onPress={() => {
+                  setRatingModal(false);
+                  setSelectedRating(currentUserRating || 0);
+                }}
+              >
+                <ThemedText type="body">Cancelar</ThemedText>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.ratingSubmitButton,
+                  selectedRating === 0 && styles.submitButtonDisabled,
+                ]}
+                onPress={handleSubmitRating}
+                disabled={selectedRating === 0}
+              >
+                <ThemedText type="body" style={styles.submitButtonText}>
+                  OK
                 </ThemedText>
               </Pressable>
             </View>
@@ -548,5 +650,36 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: "#FFFFFF",
     fontWeight: "600",
+  },
+  ratingContainer: {
+    alignItems: "center",
+    marginTop: Spacing.xs,
+  },
+  ratingHint: {
+    color: Colors.light.accent1,
+    marginTop: Spacing.xs,
+    fontWeight: "500",
+  },
+  ratingProfileName: {
+    textAlign: "center",
+    marginBottom: Spacing.lg,
+    color: "#666666",
+  },
+  ratingStarsContainer: {
+    alignItems: "center",
+    marginVertical: Spacing.xl,
+  },
+  ratingDescription: {
+    textAlign: "center",
+    marginBottom: Spacing.xl,
+    color: "#666666",
+    fontSize: 16,
+  },
+  ratingSubmitButton: {
+    flex: 1,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.light.primary,
+    alignItems: "center",
   },
 });

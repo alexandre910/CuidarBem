@@ -46,6 +46,8 @@ interface DataContextType {
   reportProfile: (reportedId: string, reason: string, description?: string) => Promise<void>;
   addServiceHistory: (history: Omit<ServiceHistory, "id">) => Promise<void>;
   rateService: (serviceId: string, rating: number, comment?: string) => Promise<void>;
+  rateProfessional: (professionalId: string, rating: number) => Promise<void>;
+  getUserRating: (professionalId: string) => number | null;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -58,7 +60,14 @@ const STORAGE_KEYS = {
   FAVORITES: "@cuidarbem:favorites",
   REPORTS: "@cuidarbem:reports",
   SERVICE_HISTORY: "@cuidarbem:service_history",
+  PROFESSIONAL_RATINGS: "@cuidarbem:professional_ratings",
 };
+
+interface ProfessionalRating {
+  professionalId: string;
+  rating: number;
+  ratedAt: string;
+}
 
 const mockProfessionals: (Cuidador | Enfermeiro)[] = [
   {
@@ -153,6 +162,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [serviceHistory, setServiceHistory] = useState<ServiceHistory[]>([]);
+  const [userRatings, setUserRatings] = useState<ProfessionalRating[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -161,12 +171,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
       loadAllUsers();
       loadFavorites();
       loadServiceHistory();
+      loadUserRatings();
     } else {
       // Clear all user-specific data on logout
       setConversations([]);
       setCuidados(null);
       setFavorites([]);
       setServiceHistory([]);
+      setUserRatings([]);
     }
   }, [user]);
 
@@ -529,6 +541,86 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loadUserRatings = async () => {
+    if (!user) return;
+    try {
+      const stored = await AsyncStorage.getItem(`${STORAGE_KEYS.PROFESSIONAL_RATINGS}:${user.id}`);
+      if (stored) {
+        setUserRatings(JSON.parse(stored));
+      }
+    } catch (error) {
+      console.error("Error loading user ratings:", error);
+    }
+  };
+
+  const rateProfessional = async (professionalId: string, rating: number) => {
+    if (!user) return;
+    try {
+      const existingIndex = userRatings.findIndex((r) => r.professionalId === professionalId);
+      let updatedRatings: ProfessionalRating[];
+      
+      if (existingIndex !== -1) {
+        updatedRatings = userRatings.map((r, i) =>
+          i === existingIndex
+            ? { ...r, rating, ratedAt: new Date().toISOString() }
+            : r
+        );
+      } else {
+        const newRating: ProfessionalRating = {
+          professionalId,
+          rating,
+          ratedAt: new Date().toISOString(),
+        };
+        updatedRatings = [...userRatings, newRating];
+      }
+      
+      setUserRatings(updatedRatings);
+      await AsyncStorage.setItem(
+        `${STORAGE_KEYS.PROFESSIONAL_RATINGS}:${user.id}`,
+        JSON.stringify(updatedRatings)
+      );
+
+      // Update professional's average rating
+      const allRatingsStored = await AsyncStorage.getItem(STORAGE_KEYS.PROFESSIONAL_RATINGS);
+      let allUserRatings: { [userId: string]: ProfessionalRating[] } = {};
+      
+      if (allRatingsStored) {
+        allUserRatings = JSON.parse(allRatingsStored);
+      }
+      allUserRatings[user.id] = updatedRatings;
+      await AsyncStorage.setItem(STORAGE_KEYS.PROFESSIONAL_RATINGS, JSON.stringify(allUserRatings));
+
+      // Calculate new average for the professional
+      let totalRating = 0;
+      let totalCount = 0;
+      Object.values(allUserRatings).forEach((ratings) => {
+        const profRating = ratings.find((r) => r.professionalId === professionalId);
+        if (profRating) {
+          totalRating += profRating.rating;
+          totalCount++;
+        }
+      });
+
+      if (totalCount > 0) {
+        const newAverage = totalRating / totalCount;
+        setProfessionals((prev) =>
+          prev.map((p) =>
+            p.id === professionalId
+              ? { ...p, avaliacaoMedia: newAverage, totalAvaliacoes: totalCount }
+              : p
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error rating professional:", error);
+    }
+  };
+
+  const getUserRating = (professionalId: string): number | null => {
+    const rating = userRatings.find((r) => r.professionalId === professionalId);
+    return rating ? rating.rating : null;
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -559,6 +651,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         reportProfile,
         addServiceHistory,
         rateService,
+        rateProfessional,
+        getUserRating,
       }}
     >
       {children}
