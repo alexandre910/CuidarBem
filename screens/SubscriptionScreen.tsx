@@ -9,6 +9,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { ThemedText } from "@/components/ThemedText";
@@ -50,6 +51,7 @@ type PaymentMethod = "pix" | "cartao";
 type PixKeyType = "cpf" | "email" | "celular" | "aleatoria";
 
 export default function SubscriptionScreen() {
+  const navigation = useNavigation();
   const { user, subscription, updateSubscription } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -156,10 +158,25 @@ export default function SubscriptionScreen() {
     setProcessing(false);
 
     const paymentMethodLabel = paymentMethod === "pix" ? "PIX" : "Cartão de Crédito";
-    Alert.alert(
-      "Assinatura Ativada",
-      `Seu ${plan.title} foi ativado com sucesso via ${paymentMethodLabel}! Válido até ${expirationDate.toLocaleDateString("pt-BR")}.`
-    );
+    const isProfessional = user.role === "cuidador" || user.role === "enfermeiro";
+    
+    if (isProfessional) {
+      Alert.alert(
+        "Assinatura Ativada",
+        `Seu ${plan.title} foi ativado com sucesso via ${paymentMethodLabel}! Válido até ${expirationDate.toLocaleDateString("pt-BR")}.\n\nComplete a disponibilidade e valores no seu perfil para liberar acesso ao seu e-mail, telefone e receber ou enviar mensagens ao contratante.\n\nAo concluir o preenchimento de disponibilidade (por hora, por dia ou por mês) e valores, estará liberado.`,
+        [
+          {
+            text: "Ir para Meu Perfil",
+            onPress: () => (navigation as any).navigate("EditProfile"),
+          },
+        ]
+      );
+    } else {
+      Alert.alert(
+        "Assinatura Ativada",
+        `Seu ${plan.title} foi ativado com sucesso via ${paymentMethodLabel}! Válido até ${expirationDate.toLocaleDateString("pt-BR")}.`
+      );
+    }
   };
 
   const formatCardNumber = (text: string) => {
