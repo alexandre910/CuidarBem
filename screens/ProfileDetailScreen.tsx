@@ -42,6 +42,7 @@ export default function ProfileDetailScreen() {
   const [reportModal, setReportModal] = useState(false);
   const [ratingModal, setRatingModal] = useState(false);
   const [confirmServiceModal, setConfirmServiceModal] = useState(false);
+  const [subscriptionModal, setSubscriptionModal] = useState(false);
   const [selectedReason, setSelectedReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
   const [selectedRating, setSelectedRating] = useState(0);
@@ -306,12 +307,15 @@ export default function ProfileDetailScreen() {
             </View>
           </View>
         ) : (
-          <View style={styles.subscriptionNotice}>
+          <Pressable 
+            style={styles.subscriptionNotice}
+            onPress={() => setSubscriptionModal(true)}
+          >
             <Feather name="lock" size={24} color={Colors.light.accent2} />
             <ThemedText type="small" style={styles.subscriptionNoticeText}>
               Assine para ver telefone e e-mail
             </ThemedText>
-          </View>
+          </Pressable>
         )}
       </View>
 
@@ -490,6 +494,47 @@ export default function ProfileDetailScreen() {
           </View>
         </View>
       </Modal>
+
+      <Modal
+        visible={subscriptionModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSubscriptionModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.subscriptionModalContent}>
+            <ThemedText type="subtitle" style={styles.subscriptionModalTitle}>
+              Assinatura Necessária
+            </ThemedText>
+
+            <ThemedText type="body" style={styles.subscriptionModalText}>
+              Para entrar em contato com profissionais, você precisa ter uma assinatura ativa.
+            </ThemedText>
+
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={styles.cancelButton}
+                onPress={() => setSubscriptionModal(false)}
+              >
+                <ThemedText type="body">Cancelar</ThemedText>
+              </Pressable>
+              <Pressable
+                style={styles.viewPlansButton}
+                onPress={() => {
+                  setSubscriptionModal(false);
+                  navigation.navigate("ProfileTab" as any, {
+                    screen: "Subscription",
+                  });
+                }}
+              >
+                <ThemedText type="body" style={styles.viewPlansButtonText}>
+                  Ver Planos
+                </ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScreenScrollView>
   );
 }
@@ -639,6 +684,34 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.md,
     color: Colors.light.accent2,
     fontWeight: "500",
+  },
+  subscriptionModalContent: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.xl,
+    width: "100%",
+    maxWidth: 400,
+  },
+  subscriptionModalTitle: {
+    textAlign: "center",
+    marginBottom: Spacing.lg,
+    color: "#000000",
+  },
+  subscriptionModalText: {
+    textAlign: "center",
+    marginBottom: Spacing.xl,
+    color: "#000000",
+  },
+  viewPlansButton: {
+    flex: 1,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.light.primary,
+    alignItems: "center",
+  },
+  viewPlansButtonText: {
+    color: "#000000",
+    fontWeight: "600",
   },
   contactButton: {
     marginTop: Spacing.md,
