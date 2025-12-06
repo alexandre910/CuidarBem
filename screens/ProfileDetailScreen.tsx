@@ -49,6 +49,15 @@ export default function ProfileDetailScreen() {
 
   const profile = getUserById(route.params.profileId) as Cuidador | Enfermeiro | undefined;
   const isContratante = user?.role === "contratante";
+  const isEmpresa = user?.role === "empresa";
+  const isProfessional = user?.role === "cuidador" || user?.role === "enfermeiro";
+  const isViewingProfessional = profile?.role === "cuidador" || profile?.role === "enfermeiro";
+  
+  // Professionals cannot message other professionals
+  const canMessage = !isProfessional || !isViewingProfessional;
+  
+  // Only contratantes and empresas can see contact info of professionals
+  const canViewContactInfo = (isContratante || isEmpresa) && !isProfessional;
 
   useEffect(() => {
     if (profile) {
@@ -274,7 +283,14 @@ export default function ProfileDetailScreen() {
         <ThemedText type="h4" style={styles.sectionTitle}>
           Contato
         </ThemedText>
-        {subscription && subscription.status === "ativo" ? (
+        {isProfessional && isViewingProfessional ? (
+          <View style={styles.restrictedNotice}>
+            <Feather name="lock" size={24} color={Colors.light.accent2} />
+            <ThemedText type="small" style={styles.restrictedNoticeText}>
+              Disponível apenas para contratantes
+            </ThemedText>
+          </View>
+        ) : subscription && subscription.status === "ativo" ? (
           <View style={styles.contactInfo}>
             <View style={styles.contactRow}>
               <Feather name="phone" size={18} color={Colors.light.text} />
@@ -299,13 +315,15 @@ export default function ProfileDetailScreen() {
         )}
       </View>
 
-      <Button
-        onPress={handleContact}
-        style={styles.contactButton}
-        icon={<Feather name="message-circle" size={20} color={Colors.light.buttonText} />}
-      >
-        Enviar Mensagem
-      </Button>
+      {canMessage ? (
+        <Button
+          onPress={handleContact}
+          style={styles.contactButton}
+          icon={<Feather name="message-circle" size={20} color={Colors.light.buttonText} />}
+        >
+          Enviar Mensagem
+        </Button>
+      ) : null}
 
       <Modal
         visible={reportModal}
@@ -603,6 +621,21 @@ const styles = StyleSheet.create({
     borderColor: Colors.light.accent2,
   },
   subscriptionNoticeText: {
+    marginLeft: Spacing.md,
+    color: Colors.light.accent2,
+    fontWeight: "500",
+  },
+  restrictedNotice: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.light.backgroundDefault,
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.light.accent2,
+  },
+  restrictedNoticeText: {
     marginLeft: Spacing.md,
     color: Colors.light.accent2,
     fontWeight: "500",

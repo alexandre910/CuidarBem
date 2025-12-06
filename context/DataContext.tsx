@@ -319,6 +319,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const startConversation = async (recipientId: string): Promise<string> => {
     if (!user) return "";
+
+    // Check if both users are professionals (cuidador or enfermeiro)
+    const recipient = getUserById(recipientId);
+    const senderIsProfessional = user.role === "cuidador" || user.role === "enfermeiro";
+    const recipientIsProfessional = recipient?.role === "cuidador" || recipient?.role === "enfermeiro";
+    
+    // Block professional-to-professional messaging
+    if (senderIsProfessional && recipientIsProfessional) {
+      console.log("Messaging between professionals is not allowed");
+      return "";
+    }
     
     const existingConv = conversations.find(
       (c) => c.participants.includes(recipientId) && c.participants.includes(user.id)
