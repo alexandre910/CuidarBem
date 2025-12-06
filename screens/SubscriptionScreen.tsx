@@ -749,7 +749,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
   },
   totalPrice: {
-    color: Colors.light.primary,
+    color: "#000000",
   },
   confirmButton: {
     marginTop: Spacing.md,
