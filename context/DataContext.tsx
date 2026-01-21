@@ -14,7 +14,8 @@ import {
   Enfermeiro,
   Favorite,
   Report,
-  ServiceHistory
+  ServiceHistory,
+  Subscription
 } from "@/types";
 import { useAuth } from "./AuthContext";
 
@@ -49,6 +50,7 @@ interface DataContextType {
   rateService: (serviceId: string, rating: number, comment?: string) => Promise<void>;
   rateProfessional: (professionalId: string, rating: number) => Promise<void>;
   getUserRating: (professionalId: string) => number | null;
+  getSubscriptionByUserId: (userId: string) => Promise<Subscription | null>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -650,6 +652,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return rating ? rating.rating : null;
   };
 
+  const getSubscriptionByUserId = async (userId: string): Promise<Subscription | null> => {
+    try {
+      const subscriptionData = await AsyncStorage.getItem(`@cuidarbem:subscription:${userId}`);
+      if (subscriptionData) {
+        const sub = JSON.parse(subscriptionData);
+        if (sub.status === "ativo" && new Date(sub.dataVencimento) > new Date()) {
+          return sub;
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error("Get subscription error:", error);
+      return null;
+    }
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -683,6 +701,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         rateService,
         rateProfessional,
         getUserRating,
+        getSubscriptionByUserId,
       }}
     >
       {children}

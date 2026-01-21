@@ -37,7 +37,7 @@ const REPORT_REASONS = [
 export default function ProfileDetailScreen() {
   const route = useRoute<RouteProps>();
   const navigation = useNavigation<NavigationProp>();
-  const { getUserById, startConversation, toggleFavorite, isFavorite, reportProfile, rateProfessional, getUserRating } = useData();
+  const { getUserById, startConversation, toggleFavorite, isFavorite, reportProfile, rateProfessional, getUserRating, getSubscriptionByUserId } = useData();
   const { user, subscription } = useAuth();
   const [reportModal, setReportModal] = useState(false);
   const [ratingModal, setRatingModal] = useState(false);
@@ -47,6 +47,7 @@ export default function ProfileDetailScreen() {
   const [reportDescription, setReportDescription] = useState("");
   const [selectedRating, setSelectedRating] = useState(0);
   const [currentUserRating, setCurrentUserRating] = useState<number | null>(null);
+  const [professionalHasActiveSubscription, setProfessionalHasActiveSubscription] = useState(false);
 
   const profile = getUserById(route.params.profileId) as Cuidador | Enfermeiro | undefined;
   const isContratante = user?.role === "contratante";
@@ -57,8 +58,20 @@ export default function ProfileDetailScreen() {
   // Professionals cannot message other professionals
   const canMessage = !isProfessional || !isViewingProfessional;
   
-  // Only contratantes and empresas can see contact info of professionals
-  const canViewContactInfo = (isContratante || isEmpresa) && !isProfessional;
+  // Check if professional has completed availability and values
+  const professionalHasAvailability = isViewingProfessional && profile && 
+    (profile as Cuidador | Enfermeiro).disponibilidade && 
+    (profile as Cuidador | Enfermeiro).disponibilidade.length > 0;
+  
+  const professionalHasValues = isViewingProfessional && profile && (
+    (profile as Cuidador | Enfermeiro).valorHora !== undefined ||
+    (profile as Cuidador | Enfermeiro).valorDia !== undefined ||
+    (profile as Cuidador | Enfermeiro).valorMensal !== undefined
+  );
+  
+  // Contact info visible only if: user is contratante/empresa AND professional has subscription + availability + values
+  const canViewContactInfo = (isContratante || isEmpresa) && !isProfessional && 
+    professionalHasActiveSubscription && professionalHasAvailability && professionalHasValues;
 
   useEffect(() => {
     if (profile) {
@@ -67,6 +80,16 @@ export default function ProfileDetailScreen() {
       setSelectedRating(existingRating || 0);
     }
   }, [profile]);
+
+  useEffect(() => {
+    const checkProfessionalSubscription = async () => {
+      if (profile && isViewingProfessional) {
+        const sub = await getSubscriptionByUserId(profile.id);
+        setProfessionalHasActiveSubscription(sub !== null);
+      }
+    };
+    checkProfessionalSubscription();
+  }, [profile, isViewingProfessional]);
 
   if (!profile) {
     return (
@@ -291,7 +314,7 @@ export default function ProfileDetailScreen() {
               Disponível apenas para contratantes
             </ThemedText>
           </View>
-        ) : subscription && subscription.status === "ativo" ? (
+        ) : canViewContactInfo && subscription && subscription.status === "ativo" ? (
           <View style={styles.contactInfo}>
             <View style={styles.contactRow}>
               <Feather name="phone" size={18} color={Colors.light.text} />
@@ -305,6 +328,13 @@ export default function ProfileDetailScreen() {
                 {profile.email}
               </ThemedText>
             </View>
+          </View>
+        ) : (isContratante || isEmpresa) && !isProfessional && (!professionalHasActiveSubscription || !professionalHasAvailability || !professionalHasValues) ? (
+          <View style={styles.restrictedNotice}>
+            <Feather name="lock" size={24} color={Colors.light.accent2} />
+            <ThemedText type="small" style={styles.restrictedNoticeText}>
+              Profissional ainda não completou o perfil
+            </ThemedText>
           </View>
         ) : (
           <Pressable 
