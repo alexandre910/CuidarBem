@@ -123,6 +123,30 @@ export default function SubscriptionScreen() {
     return true;
   };
 
+  const handleCancelSubscription = () => {
+    Alert.alert(
+      "Cancelar Assinatura",
+      "Tem certeza que deseja cancelar sua assinatura? Você perderá acesso aos recursos premium.",
+      [
+        { text: "Não", style: "cancel" },
+        {
+          text: "Sim, Cancelar",
+          style: "destructive",
+          onPress: async () => {
+            if (subscription) {
+              const cancelledSubscription: Subscription = {
+                ...subscription,
+                status: "cancelado",
+              };
+              await updateSubscription(cancelledSubscription);
+              Alert.alert("Assinatura Cancelada", "Sua assinatura foi cancelada com sucesso.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleConfirmPayment = async () => {
     if (!validatePayment()) return;
     if (!selectedPlan) return;
@@ -240,20 +264,30 @@ export default function SubscriptionScreen() {
       </View>
 
       {subscription?.status === "ativo" ? (
-        <View style={styles.currentPlanCard}>
-          <View style={styles.currentPlanHeader}>
-            <Feather name="check-circle" size={24} color={Colors.light.success} />
-            <ThemedText type="h4" style={styles.currentPlanTitle}>
-              Plano Ativo
+        <>
+          <View style={styles.currentPlanCard}>
+            <View style={styles.currentPlanHeader}>
+              <Feather name="check-circle" size={24} color={Colors.light.success} />
+              <ThemedText type="h4" style={styles.currentPlanTitle}>
+                Plano Ativo
+              </ThemedText>
+            </View>
+            <ThemedText type="body" style={styles.currentPlanType}>
+              {subscription.tipo === "mensal" ? "Plano Mensal" : "Plano Anual"}
+            </ThemedText>
+            <ThemedText type="small" style={styles.currentPlanDate}>
+              Válido até: {new Date(subscription.dataVencimento).toLocaleDateString("pt-BR")}
             </ThemedText>
           </View>
-          <ThemedText type="body" style={styles.currentPlanType}>
-            {subscription.tipo === "mensal" ? "Plano Mensal" : "Plano Anual"}
-          </ThemedText>
-          <ThemedText type="small" style={styles.currentPlanDate}>
-            Válido até: {new Date(subscription.dataVencimento).toLocaleDateString("pt-BR")}
-          </ThemedText>
-        </View>
+          <Pressable
+            style={styles.cancelSubscriptionButton}
+            onPress={handleCancelSubscription}
+          >
+            <ThemedText type="body" style={styles.cancelSubscriptionText}>
+              Cancelar Assinatura
+            </ThemedText>
+          </Pressable>
+        </>
       ) : null}
 
       {plans.map((plan) => (
@@ -559,6 +593,19 @@ const styles = StyleSheet.create({
   currentPlanDate: {
     color: "#666666",
     marginTop: Spacing.xs,
+  },
+  cancelSubscriptionButton: {
+    backgroundColor: "#FFFFFF",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+    marginBottom: Spacing["2xl"],
+    borderWidth: 1,
+    borderColor: "#DDDDDD",
+  },
+  cancelSubscriptionText: {
+    color: "#000000",
+    fontWeight: "500",
   },
   planCard: {
     backgroundColor: Colors.light.backgroundDefault,

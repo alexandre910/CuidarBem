@@ -54,7 +54,7 @@ export interface Subscription {
   id: string;
   userId: string;
   tipo: "mensal" | "anual";
-  status: "ativo" | "pendente" | "expirado";
+  status: "ativo" | "pendente" | "expirado" | "cancelado";
   dataInicio: string;
   dataVencimento: string;
   valor: number;
