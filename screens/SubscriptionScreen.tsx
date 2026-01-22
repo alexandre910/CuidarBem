@@ -264,30 +264,20 @@ export default function SubscriptionScreen() {
       </View>
 
       {subscription?.status === "ativo" ? (
-        <>
-          <View style={styles.currentPlanCard}>
-            <View style={styles.currentPlanHeader}>
-              <Feather name="check-circle" size={24} color={Colors.light.success} />
-              <ThemedText type="h4" style={styles.currentPlanTitle}>
-                Plano Ativo
-              </ThemedText>
-            </View>
-            <ThemedText type="body" style={styles.currentPlanType}>
-              {subscription.tipo === "mensal" ? "Plano Mensal" : "Plano Anual"}
-            </ThemedText>
-            <ThemedText type="small" style={styles.currentPlanDate}>
-              Válido até: {new Date(subscription.dataVencimento).toLocaleDateString("pt-BR")}
+        <View style={styles.currentPlanCard}>
+          <View style={styles.currentPlanHeader}>
+            <Feather name="check-circle" size={24} color={Colors.light.success} />
+            <ThemedText type="h4" style={styles.currentPlanTitle}>
+              Plano Ativo
             </ThemedText>
           </View>
-          <Pressable
-            style={styles.cancelSubscriptionButton}
-            onPress={handleCancelSubscription}
-          >
-            <ThemedText type="body" style={styles.cancelSubscriptionText}>
-              Cancelar Assinatura
-            </ThemedText>
-          </Pressable>
-        </>
+          <ThemedText type="body" style={styles.currentPlanType}>
+            {subscription.tipo === "mensal" ? "Plano Mensal" : "Plano Anual"}
+          </ThemedText>
+          <ThemedText type="small" style={styles.currentPlanDate}>
+            Válido até: {new Date(subscription.dataVencimento).toLocaleDateString("pt-BR")}
+          </ThemedText>
+        </View>
       ) : null}
 
       {plans.map((plan) => (
@@ -355,17 +345,25 @@ export default function SubscriptionScreen() {
         </Pressable>
       ))}
 
-      <Button
-        onPress={openPaymentModal}
-        loading={processing}
-        disabled={!selectedPlan || subscription?.status === "ativo"}
-        style={styles.subscribeButton}
-        textStyle={subscription?.status === "ativo" ? { color: "#000000" } : undefined}
-      >
-        {subscription?.status === "ativo"
-          ? "Você já possui assinatura ativa"
-          : "Assinar Agora"}
-      </Button>
+      {subscription?.status === "ativo" ? (
+        <Pressable
+          style={styles.cancelSubscriptionButton}
+          onPress={handleCancelSubscription}
+        >
+          <ThemedText type="body" style={styles.cancelSubscriptionText}>
+            Cancelar Assinatura
+          </ThemedText>
+        </Pressable>
+      ) : (
+        <Button
+          onPress={openPaymentModal}
+          loading={processing}
+          disabled={!selectedPlan}
+          style={styles.subscribeButton}
+        >
+          Assinar Agora
+        </Button>
+      )}
 
       <ThemedText type="caption" style={styles.disclaimer}>
         Pagamento processado de forma segura. Você pode cancelar a qualquer
