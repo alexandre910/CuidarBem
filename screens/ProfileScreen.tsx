@@ -179,7 +179,10 @@ export default function ProfileScreen() {
         <RoleBadge role={user?.role || "contratante"} size="medium" style={styles.roleBadge} />
       </View>
 
-      <View style={[styles.subscriptionCard, { borderColor: subscriptionStatus.color }]}>
+      <Pressable 
+        style={[styles.subscriptionCard, { borderColor: subscriptionStatus.color }]}
+        onPress={() => navigation.navigate("Subscription")}
+      >
         <View style={styles.subscriptionHeader}>
           <Feather
             name={subscription?.status === "ativo" ? "check-circle" : "alert-circle"}
@@ -195,7 +198,7 @@ export default function ProfileScreen() {
             Vencimento: {new Date(subscription.dataVencimento).toLocaleDateString("pt-BR")}
           </ThemedText>
         ) : null}
-      </View>
+      </Pressable>
 
       <View style={styles.quickActions}>
         <Pressable
