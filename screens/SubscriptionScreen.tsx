@@ -6,8 +6,10 @@ import {
   Alert,
   Modal,
   TextInput,
-  ScrollView,
+  Platform,
+  KeyboardAvoidingView,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
@@ -376,7 +378,10 @@ export default function SubscriptionScreen() {
         transparent
         onRequestClose={() => setPaymentModal(false)}
       >
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView 
+          style={styles.modalOverlay}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <ThemedText type="h4">Forma de Pagamento</ThemedText>
@@ -385,7 +390,7 @@ export default function SubscriptionScreen() {
               </Pressable>
             </View>
 
-            <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+            <KeyboardAwareScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
               <View style={styles.paymentMethodSelector}>
                 <Pressable
                   style={[
@@ -549,9 +554,9 @@ export default function SubscriptionScreen() {
               <Button onPress={handleConfirmPayment} style={styles.confirmButton}>
                 OK
               </Button>
-            </ScrollView>
+            </KeyboardAwareScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </ScreenScrollView>
   );
