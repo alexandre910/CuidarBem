@@ -32,7 +32,7 @@ export default function ProfileScreen() {
   const { user, subscription, updateProfile, logout } = useAuth();
   const { favorites, serviceHistory } = useData();
   const scrollViewRef = useRef<ScrollView>(null);
-  const [dadosPessoaisY, setDadosPessoaisY] = useState(0);
+  const [dadosPessoaisExpanded, setDadosPessoaisExpanded] = useState(false);
 
   const [nome, setNome] = useState(user?.nome || "");
   const [telefone, setTelefone] = useState(user?.telefone || "");
@@ -268,7 +268,7 @@ export default function ProfileScreen() {
 
         <Pressable
           style={[styles.quickActionItem, styles.quickActionItemLast]}
-          onPress={() => scrollViewRef.current?.scrollTo({ y: dadosPessoaisY, animated: true })}
+          onPress={() => setDadosPessoaisExpanded(!dadosPessoaisExpanded)}
         >
           <View style={styles.quickActionLeft}>
             <Feather name="user" size={20} color={Colors.light.accent.blue} />
@@ -276,47 +276,46 @@ export default function ProfileScreen() {
               Dados Pessoais
             </ThemedText>
           </View>
-          <Feather name="chevron-right" size={20} color="#CCCCCC" />
+          <Feather 
+            name={dadosPessoaisExpanded ? "chevron-down" : "chevron-right"} 
+            size={20} 
+            color="#CCCCCC" 
+          />
         </Pressable>
-      </View>
 
-      <View 
-        style={styles.section}
-        onLayout={(event) => setDadosPessoaisY(event.nativeEvent.layout.y)}
-      >
-        <ThemedText type="h4" style={styles.sectionTitle}>
-          Dados Pessoais
-        </ThemedText>
-        
-        <Input
-          label="Nome completo"
-          value={nome}
-          onChangeText={setNome}
-          leftIcon="user"
-        />
+        {dadosPessoaisExpanded ? (
+          <View style={styles.expandedSection}>
+            <Input
+              label="Nome completo"
+              value={nome}
+              onChangeText={setNome}
+              leftIcon="user"
+            />
 
-        <Input
-          label="E-mail"
-          value={user?.email || ""}
-          editable={false}
-          leftIcon="mail"
-          containerStyle={styles.disabledInput}
-        />
+            <Input
+              label="E-mail"
+              value={user?.email || ""}
+              editable={false}
+              leftIcon="mail"
+              containerStyle={styles.disabledInput}
+            />
 
-        <Input
-          label="Telefone"
-          value={telefone}
-          onChangeText={setTelefone}
-          leftIcon="phone"
-          keyboardType="phone-pad"
-        />
+            <Input
+              label="Telefone"
+              value={telefone}
+              onChangeText={setTelefone}
+              leftIcon="phone"
+              keyboardType="phone-pad"
+            />
 
-        <Input
-          label="Cidade"
-          value={cidade}
-          onChangeText={setCidade}
-          leftIcon="map-pin"
-        />
+            <Input
+              label="Cidade"
+              value={cidade}
+              onChangeText={setCidade}
+              leftIcon="map-pin"
+            />
+          </View>
+        ) : null}
       </View>
 
       {isProfessional ? (
@@ -540,6 +539,14 @@ const styles = StyleSheet.create({
   },
   quickActionItemLast: {
     borderBottomWidth: 0,
+  },
+  expandedSection: {
+    paddingTop: Spacing.md,
+    paddingHorizontal: Spacing.sm,
+    backgroundColor: Colors.light.backgroundDefault,
+    borderBottomLeftRadius: BorderRadius.md,
+    borderBottomRightRadius: BorderRadius.md,
+    marginBottom: Spacing.sm,
   },
   quickActionLeft: {
     flexDirection: "row",
