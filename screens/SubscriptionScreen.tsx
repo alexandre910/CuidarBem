@@ -193,7 +193,7 @@ export default function SubscriptionScreen() {
         [
           {
             text: "Ir para Meu Perfil",
-            onPress: () => (navigation as any).navigate("EditProfile"),
+            onPress: () => navigation.goBack(),
           },
         ]
       );
