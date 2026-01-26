@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { StyleSheet, View, Alert, Pressable, Platform } from "react-native";
+import type { ScrollView } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useNavigation } from "@react-navigation/native";
@@ -30,6 +31,8 @@ export default function ProfileScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { user, subscription, updateProfile, logout } = useAuth();
   const { favorites, serviceHistory } = useData();
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [dadosPessoaisY, setDadosPessoaisY] = useState(0);
 
   const [nome, setNome] = useState(user?.nome || "");
   const [telefone, setTelefone] = useState(user?.telefone || "");
@@ -168,7 +171,7 @@ export default function ProfileScreen() {
   const subscriptionStatus = getSubscriptionStatus();
 
   return (
-    <ScreenKeyboardAwareScrollView>
+    <ScreenKeyboardAwareScrollView ref={scrollViewRef}>
       <View style={styles.photoSection}>
         <Pressable onPress={pickImage} style={styles.photoContainer}>
           <Avatar uri={foto} size={120} role={user?.role} />
@@ -251,7 +254,7 @@ export default function ProfileScreen() {
         </Pressable>
 
         <Pressable
-          style={[styles.quickActionItem, styles.quickActionItemLast]}
+          style={styles.quickActionItem}
           onPress={() => navigation.navigate("PaymentHistory")}
         >
           <View style={styles.quickActionLeft}>
@@ -262,9 +265,25 @@ export default function ProfileScreen() {
           </View>
           <Feather name="chevron-right" size={20} color="#CCCCCC" />
         </Pressable>
+
+        <Pressable
+          style={[styles.quickActionItem, styles.quickActionItemLast]}
+          onPress={() => scrollViewRef.current?.scrollTo({ y: dadosPessoaisY, animated: true })}
+        >
+          <View style={styles.quickActionLeft}>
+            <Feather name="user" size={20} color={Colors.light.accent.blue} />
+            <ThemedText type="body" style={styles.quickActionText}>
+              Dados Pessoais
+            </ThemedText>
+          </View>
+          <Feather name="chevron-right" size={20} color="#CCCCCC" />
+        </Pressable>
       </View>
 
-      <View style={styles.section}>
+      <View 
+        style={styles.section}
+        onLayout={(event) => setDadosPessoaisY(event.nativeEvent.layout.y)}
+      >
         <ThemedText type="h4" style={styles.sectionTitle}>
           Dados Pessoais
         </ThemedText>
