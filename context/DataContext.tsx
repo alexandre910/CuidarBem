@@ -168,6 +168,31 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [userRatings, setUserRatings] = useState<ProfessionalRating[]>([]);
 
   useEffect(() => {
+    const initializeMockSubscriptions = async () => {
+      const futureDate = new Date();
+      futureDate.setFullYear(futureDate.getFullYear() + 1);
+      
+      for (const prof of mockProfessionals) {
+        const key = `@cuidarbem:subscription:${prof.id}`;
+        const existing = await AsyncStorage.getItem(key);
+        if (!existing) {
+          const mockSubscription = {
+            id: `sub_${prof.id}`,
+            plano: "mensal",
+            valor: 49.90,
+            dataInicio: new Date().toISOString(),
+            dataVencimento: futureDate.toISOString(),
+            status: "ativo",
+            metodoPagamento: "pix",
+          };
+          await AsyncStorage.setItem(key, JSON.stringify(mockSubscription));
+        }
+      }
+    };
+    initializeMockSubscriptions();
+  }, []);
+
+  useEffect(() => {
     if (user) {
       loadConversations();
       loadCuidados();
