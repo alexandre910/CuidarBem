@@ -85,6 +85,33 @@ export default function AuthScreen() {
     }
   };
 
+  const formatTelefone = (value: string) => {
+    const numbers = value.replace(/\D/g, "").slice(0, 11);
+    if (numbers.length === 0) return "";
+    
+    let formatted = "(" + numbers.slice(0, 2);
+    if (numbers.length > 2) {
+      formatted += ")" + numbers.slice(2);
+    }
+    if (numbers.length > 2) {
+      const afterDdd = numbers.slice(2);
+      if (afterDdd.charAt(0) === "9") {
+        if (numbers.length > 7) {
+          formatted = "(" + numbers.slice(0, 2) + ")" + numbers.slice(2, 7) + "-" + numbers.slice(7);
+        }
+      } else {
+        if (numbers.length > 6) {
+          formatted = "(" + numbers.slice(0, 2) + ")" + numbers.slice(2, 6) + "-" + numbers.slice(6);
+        }
+      }
+    }
+    return formatted;
+  };
+
+  const handleTelefoneChange = (value: string) => {
+    setTelefone(formatTelefone(value));
+  };
+
   const validateLogin = () => {
     const newErrors: Record<string, string> = {};
     if (!email.trim()) newErrors.email = "E-mail obrigatório";
@@ -243,10 +270,11 @@ export default function AuthScreen() {
               label="Telefone"
               placeholder="(00) 00000-0000"
               value={telefone}
-              onChangeText={setTelefone}
+              onChangeText={handleTelefoneChange}
               error={errors.telefone}
               leftIcon="phone"
               keyboardType="phone-pad"
+              maxLength={14}
             />
 
             <Input
