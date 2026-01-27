@@ -33,6 +33,7 @@ export default function ProfileScreen() {
   const { favorites, serviceHistory } = useData();
   const scrollViewRef = useRef<ScrollView>(null);
   const [dadosPessoaisExpanded, setDadosPessoaisExpanded] = useState(false);
+  const [valoresServicosExpanded, setValoresServicosExpanded] = useState(false);
 
   const [nome, setNome] = useState(user?.nome || "");
   const [telefone, setTelefone] = useState(user?.telefone || "");
@@ -267,7 +268,7 @@ export default function ProfileScreen() {
         </Pressable>
 
         <Pressable
-          style={[styles.quickActionItem, styles.quickActionItemLast]}
+          style={[styles.quickActionItem, !isProfessional && styles.quickActionItemLast]}
           onPress={() => setDadosPessoaisExpanded(!dadosPessoaisExpanded)}
         >
           <View style={styles.quickActionLeft}>
@@ -316,6 +317,55 @@ export default function ProfileScreen() {
             />
           </View>
         ) : null}
+
+        {isProfessional ? (
+          <>
+            <Pressable
+              style={[styles.quickActionItem, styles.quickActionItemLast]}
+              onPress={() => setValoresServicosExpanded(!valoresServicosExpanded)}
+            >
+              <View style={styles.quickActionLeft}>
+                <Feather name="dollar-sign" size={20} color={Colors.light.success} />
+                <ThemedText type="body" style={styles.quickActionText}>
+                  Valores de Serviços
+                </ThemedText>
+              </View>
+              <Feather 
+                name={valoresServicosExpanded ? "chevron-down" : "chevron-right"} 
+                size={20} 
+                color="#CCCCCC" 
+              />
+            </Pressable>
+
+            {valoresServicosExpanded ? (
+              <View style={styles.expandedSection}>
+                <Input
+                  label="Valor por Hora (R$)"
+                  value={valorHora}
+                  onChangeText={setValorHora}
+                  keyboardType="decimal-pad"
+                  placeholder="0,00"
+                />
+
+                <Input
+                  label="Valor por Dia (R$)"
+                  value={valorDia}
+                  onChangeText={setValorDia}
+                  keyboardType="decimal-pad"
+                  placeholder="0,00"
+                />
+
+                <Input
+                  label="Valor Mensal (R$)"
+                  value={valorMensal}
+                  onChangeText={setValorMensal}
+                  keyboardType="decimal-pad"
+                  placeholder="0,00"
+                />
+              </View>
+            ) : null}
+          </>
+        ) : null}
       </View>
 
       {isProfessional ? (
@@ -346,36 +396,6 @@ export default function ProfileScreen() {
                 </Pressable>
               ))}
             </View>
-          </View>
-
-          <View style={styles.section}>
-            <ThemedText type="h4" style={styles.sectionTitle}>
-              Valores de Serviço
-            </ThemedText>
-
-            <Input
-              label="Valor por Hora (R$)"
-              value={valorHora}
-              onChangeText={setValorHora}
-              keyboardType="decimal-pad"
-              placeholder="0,00"
-            />
-
-            <Input
-              label="Valor por Dia (R$)"
-              value={valorDia}
-              onChangeText={setValorDia}
-              keyboardType="decimal-pad"
-              placeholder="0,00"
-            />
-
-            <Input
-              label="Valor Mensal (R$)"
-              value={valorMensal}
-              onChangeText={setValorMensal}
-              keyboardType="decimal-pad"
-              placeholder="0,00"
-            />
           </View>
 
           {isEnfermeiro ? (
