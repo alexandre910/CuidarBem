@@ -51,6 +51,7 @@ interface DataContextType {
   rateProfessional: (professionalId: string, rating: number) => Promise<void>;
   getUserRating: (professionalId: string) => number | null;
   getSubscriptionByUserId: (userId: string) => Promise<Subscription | null>;
+  unreadCount: number;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -166,6 +167,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [serviceHistory, setServiceHistory] = useState<ServiceHistory[]>([]);
   const [userRatings, setUserRatings] = useState<ProfessionalRating[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     const initializeMockSubscriptions = async () => {
@@ -234,11 +236,34 @@ export function DataProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     try {
       const stored = await AsyncStorage.getItem(`${STORAGE_KEYS.CONVERSATIONS}:${user.id}`);
-      // Always set conversations - either from storage or empty array
-      setConversations(stored ? JSON.parse(stored) : []);
+      const convs = stored ? JSON.parse(stored) : [];
+      setConversations(convs);
+      await calculateUnreadCount(convs);
     } catch (error) {
       console.error("Error loading conversations:", error);
       setConversations([]);
+      setUnreadCount(0);
+    }
+  };
+
+  const calculateUnreadCount = async (convs: Conversation[]) => {
+    if (!user) {
+      setUnreadCount(0);
+      return;
+    }
+    try {
+      let count = 0;
+      for (const conv of convs) {
+        const messagesData = await AsyncStorage.getItem(`${STORAGE_KEYS.MESSAGES}:${conv.id}`);
+        if (messagesData) {
+          const messages: Message[] = JSON.parse(messagesData);
+          count += messages.filter(m => !m.read && m.senderId !== user.id).length;
+        }
+      }
+      setUnreadCount(count);
+    } catch (error) {
+      console.error("Error calculating unread count:", error);
+      setUnreadCount(0);
     }
   };
 
@@ -275,9 +300,25 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const getMessages = async (conversationId: string): Promise<Message[]> => {
+    if (!user) return [];
     try {
       const stored = await AsyncStorage.getItem(`${STORAGE_KEYS.MESSAGES}:${conversationId}`);
-      return stored ? JSON.parse(stored) : [];
+      const messages: Message[] = stored ? JSON.parse(stored) : [];
+      
+      const updatedMessages = messages.map(m => {
+        if (!m.read && m.senderId !== user.id) {
+          return { ...m, read: true };
+        }
+        return m;
+      });
+      
+      const hasUnread = messages.some(m => !m.read && m.senderId !== user.id);
+      if (hasUnread) {
+        await AsyncStorage.setItem(`${STORAGE_KEYS.MESSAGES}:${conversationId}`, JSON.stringify(updatedMessages));
+        await calculateUnreadCount(conversations);
+      }
+      
+      return updatedMessages;
     } catch (error) {
       console.error("Error getting messages:", error);
       return [];
@@ -727,6 +768,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         rateProfessional,
         getUserRating,
         getSubscriptionByUserId,
+        unreadCount,
       }}
     >
       {children}

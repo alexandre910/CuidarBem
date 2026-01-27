@@ -2,7 +2,7 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
-import { Platform, StyleSheet } from "react-native";
+import { Platform, StyleSheet, View, Text } from "react-native";
 
 import SearchStackNavigator from "@/navigation/SearchStackNavigator";
 import ChatStackNavigator from "@/navigation/ChatStackNavigator";
@@ -10,6 +10,7 @@ import ProfileStackNavigator from "@/navigation/ProfileStackNavigator";
 import CareStackNavigator from "@/navigation/CareStackNavigator";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
+import { useData } from "@/context/DataContext";
 import { Colors } from "@/constants/theme";
 
 export type MainTabParamList = {
@@ -24,6 +25,7 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 export default function MainTabNavigator() {
   const { theme, isDark } = useTheme();
   const { user } = useAuth();
+  const { unreadCount } = useData();
 
   const showCareTab = user?.role === "contratante";
 
@@ -69,7 +71,16 @@ export default function MainTabNavigator() {
         options={{
           title: "Chat",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="message-circle" size={size} color={color} />
+            <View>
+              <Feather name="message-circle" size={size} color={color} />
+              {unreadCount > 0 ? (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
           ),
         }}
       />
@@ -98,3 +109,23 @@ export default function MainTabNavigator() {
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  badge: {
+    position: "absolute",
+    right: -8,
+    top: -4,
+    backgroundColor: "#DC4429",
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+});
