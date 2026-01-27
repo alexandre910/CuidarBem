@@ -84,7 +84,7 @@ const mockProfessionals: (Cuidador | Enfermeiro)[] = [
     disponibilidade: ["hora", "dia"],
     valorHora: 50,
     valorDia: 350,
-    valorMensal: 5000,
+    valorMensal: 0,
     avaliacaoMedia: 4.8,
     totalAvaliacoes: 45,
     createdAt: new Date().toISOString(),
