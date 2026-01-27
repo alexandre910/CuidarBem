@@ -99,7 +99,7 @@ const mockProfessionals: (Cuidador | Enfermeiro)[] = [
     role: "enfermeiro",
     coren: "COREN-SP 123456",
     disponibilidade: ["dia", "mes"],
-    valorHora: 80,
+    valorHora: 0,
     valorDia: 500,
     valorMensal: 8000,
     avaliacaoMedia: 4.9,
