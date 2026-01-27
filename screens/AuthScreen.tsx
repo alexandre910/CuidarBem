@@ -44,6 +44,21 @@ export default function AuthScreen() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const handleRoleChange = (role: UserRole) => {
+    if (role !== selectedRole) {
+      setNome("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+      setCpfCnpj("");
+      setTelefone("");
+      setCidade("");
+      setCoren("");
+      setErrors({});
+    }
+    setSelectedRole(role);
+  };
+
   const formatCpf = (value: string) => {
     const numbers = value.replace(/\D/g, "").slice(0, 11);
     let formatted = numbers;
@@ -222,7 +237,7 @@ export default function AuthScreen() {
                 {roleOptions.map((option) => (
                   <Pressable
                     key={option.value}
-                    onPress={() => setSelectedRole(option.value)}
+                    onPress={() => handleRoleChange(option.value)}
                     style={[
                       styles.roleOption,
                       selectedRole === option.value && styles.roleOptionActive,
