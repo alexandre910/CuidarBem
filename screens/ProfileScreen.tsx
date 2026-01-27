@@ -32,8 +32,11 @@ export default function ProfileScreen() {
   const { user, subscription, updateProfile, logout } = useAuth();
   const { favorites, serviceHistory } = useData();
   const scrollViewRef = useRef<ScrollView>(null);
-  const [dadosPessoaisExpanded, setDadosPessoaisExpanded] = useState(false);
-  const [valoresServicosExpanded, setValoresServicosExpanded] = useState(false);
+  const [expandedSection, setExpandedSection] = useState<"dados" | "valores" | null>(null);
+
+  const toggleSection = (section: "dados" | "valores") => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
 
   const [nome, setNome] = useState(user?.nome || "");
   const [telefone, setTelefone] = useState(user?.telefone || "");
@@ -269,7 +272,7 @@ export default function ProfileScreen() {
 
         <Pressable
           style={[styles.quickActionItem, !isProfessional && styles.quickActionItemLast]}
-          onPress={() => setDadosPessoaisExpanded(!dadosPessoaisExpanded)}
+          onPress={() => toggleSection("dados")}
         >
           <View style={styles.quickActionLeft}>
             <Feather name="user" size={20} color={Colors.light.accent.blue} />
@@ -278,13 +281,13 @@ export default function ProfileScreen() {
             </ThemedText>
           </View>
           <Feather 
-            name={dadosPessoaisExpanded ? "chevron-down" : "chevron-right"} 
+            name={expandedSection === "dados" ? "chevron-down" : "chevron-right"} 
             size={20} 
             color="#CCCCCC" 
           />
         </Pressable>
 
-        {dadosPessoaisExpanded ? (
+        {expandedSection === "dados" ? (
           <View style={styles.expandedSection}>
             <Input
               label="Nome completo"
@@ -322,7 +325,7 @@ export default function ProfileScreen() {
           <>
             <Pressable
               style={[styles.quickActionItem, styles.quickActionItemLast]}
-              onPress={() => setValoresServicosExpanded(!valoresServicosExpanded)}
+              onPress={() => toggleSection("valores")}
             >
               <View style={styles.quickActionLeft}>
                 <Feather name="dollar-sign" size={20} color={Colors.light.success} />
@@ -331,13 +334,13 @@ export default function ProfileScreen() {
                 </ThemedText>
               </View>
               <Feather 
-                name={valoresServicosExpanded ? "chevron-down" : "chevron-right"} 
+                name={expandedSection === "valores" ? "chevron-down" : "chevron-right"} 
                 size={20} 
                 color="#CCCCCC" 
               />
             </Pressable>
 
-            {valoresServicosExpanded ? (
+            {expandedSection === "valores" ? (
               <View style={styles.expandedSection}>
                 <Input
                   label="Valor por Hora (R$)"
