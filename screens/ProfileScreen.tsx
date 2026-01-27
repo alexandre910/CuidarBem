@@ -362,6 +362,32 @@ export default function ProfileScreen() {
                   keyboardType="decimal-pad"
                   placeholder="0,00"
                 />
+
+                <ThemedText type="body" style={styles.disponibilidadeLabel}>
+                  Disponibilidade
+                </ThemedText>
+                <View style={styles.availabilityOptions}>
+                  {availabilityOptions.map((option) => (
+                    <Pressable
+                      key={option.value}
+                      onPress={() => toggleAvailability(option.value)}
+                      style={[
+                        styles.availabilityOption,
+                        disponibilidade.includes(option.value) && styles.availabilityOptionActive,
+                      ]}
+                    >
+                      <ThemedText
+                        type="body"
+                        style={[
+                          styles.availabilityText,
+                          disponibilidade.includes(option.value) && styles.availabilityTextActive,
+                        ]}
+                      >
+                        {option.label}
+                      </ThemedText>
+                    </Pressable>
+                  ))}
+                </View>
               </View>
             ) : null}
           </>
@@ -370,34 +396,6 @@ export default function ProfileScreen() {
 
       {isProfessional ? (
         <>
-          <View style={styles.section}>
-            <ThemedText type="h4" style={styles.sectionTitle}>
-              Disponibilidade
-            </ThemedText>
-            <View style={styles.availabilityOptions}>
-              {availabilityOptions.map((option) => (
-                <Pressable
-                  key={option.value}
-                  onPress={() => toggleAvailability(option.value)}
-                  style={[
-                    styles.availabilityOption,
-                    disponibilidade.includes(option.value) && styles.availabilityOptionActive,
-                  ]}
-                >
-                  <ThemedText
-                    type="body"
-                    style={[
-                      styles.availabilityText,
-                      disponibilidade.includes(option.value) && styles.availabilityTextActive,
-                    ]}
-                  >
-                    {option.label}
-                  </ThemedText>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-
           {isEnfermeiro ? (
             <View style={styles.section}>
               <ThemedText type="h4" style={styles.sectionTitle}>
@@ -503,6 +501,11 @@ const styles = StyleSheet.create({
   },
   disabledInput: {
     opacity: 0.6,
+  },
+  disponibilidadeLabel: {
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
+    fontWeight: "600",
   },
   availabilityOptions: {
     flexDirection: "row",
