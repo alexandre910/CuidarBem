@@ -66,6 +66,46 @@ export default function SubscriptionScreen() {
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardName, setCardName] = useState("");
 
+  const formatCpf = (value: string) => {
+    const numbers = value.replace(/\D/g, "").slice(0, 11);
+    let formatted = numbers;
+    if (numbers.length > 3) {
+      formatted = numbers.slice(0, 3) + "." + numbers.slice(3);
+    }
+    if (numbers.length > 6) {
+      formatted = numbers.slice(0, 3) + "." + numbers.slice(3, 6) + "." + numbers.slice(6);
+    }
+    if (numbers.length > 9) {
+      formatted = numbers.slice(0, 3) + "." + numbers.slice(3, 6) + "." + numbers.slice(6, 9) + "-" + numbers.slice(9);
+    }
+    return formatted;
+  };
+
+  const formatCelular = (value: string) => {
+    const numbers = value.replace(/\D/g, "").slice(0, 11);
+    let formatted = numbers;
+    if (numbers.length > 0) {
+      formatted = "(" + numbers.slice(0, 2);
+    }
+    if (numbers.length > 2) {
+      formatted = "(" + numbers.slice(0, 2) + ") " + numbers.slice(2);
+    }
+    if (numbers.length > 7) {
+      formatted = "(" + numbers.slice(0, 2) + ") " + numbers.slice(2, 7) + "-" + numbers.slice(7);
+    }
+    return formatted;
+  };
+
+  const handlePixKeyChange = (value: string) => {
+    if (pixKeyType === "cpf") {
+      setPixKey(formatCpf(value));
+    } else if (pixKeyType === "celular") {
+      setPixKey(formatCelular(value));
+    } else {
+      setPixKey(value);
+    }
+  };
+
   const resetPaymentForm = () => {
     setPaymentMethod("pix");
     setPixKeyType("cpf");
@@ -478,9 +518,10 @@ export default function SubscriptionScreen() {
                     placeholder={getPixKeyPlaceholder()}
                     placeholderTextColor="#999999"
                     value={pixKey}
-                    onChangeText={setPixKey}
+                    onChangeText={handlePixKeyChange}
                     keyboardType={pixKeyType === "cpf" || pixKeyType === "celular" ? "numeric" : "default"}
                     autoCapitalize="none"
+                    maxLength={pixKeyType === "cpf" ? 14 : pixKeyType === "celular" ? 15 : undefined}
                   />
                 </View>
               ) : (

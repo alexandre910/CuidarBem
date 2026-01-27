@@ -44,6 +44,47 @@ export default function AuthScreen() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const formatCpf = (value: string) => {
+    const numbers = value.replace(/\D/g, "").slice(0, 11);
+    let formatted = numbers;
+    if (numbers.length > 3) {
+      formatted = numbers.slice(0, 3) + "." + numbers.slice(3);
+    }
+    if (numbers.length > 6) {
+      formatted = numbers.slice(0, 3) + "." + numbers.slice(3, 6) + "." + numbers.slice(6);
+    }
+    if (numbers.length > 9) {
+      formatted = numbers.slice(0, 3) + "." + numbers.slice(3, 6) + "." + numbers.slice(6, 9) + "-" + numbers.slice(9);
+    }
+    return formatted;
+  };
+
+  const formatCnpj = (value: string) => {
+    const numbers = value.replace(/\D/g, "").slice(0, 14);
+    let formatted = numbers;
+    if (numbers.length > 2) {
+      formatted = numbers.slice(0, 2) + "." + numbers.slice(2);
+    }
+    if (numbers.length > 5) {
+      formatted = numbers.slice(0, 2) + "." + numbers.slice(2, 5) + "." + numbers.slice(5);
+    }
+    if (numbers.length > 8) {
+      formatted = numbers.slice(0, 2) + "." + numbers.slice(2, 5) + "." + numbers.slice(5, 8) + "/" + numbers.slice(8);
+    }
+    if (numbers.length > 12) {
+      formatted = numbers.slice(0, 2) + "." + numbers.slice(2, 5) + "." + numbers.slice(5, 8) + "/" + numbers.slice(8, 12) + "-" + numbers.slice(12);
+    }
+    return formatted;
+  };
+
+  const handleCpfCnpjChange = (value: string) => {
+    if (selectedRole === "empresa") {
+      setCpfCnpj(formatCnpj(value));
+    } else {
+      setCpfCnpj(formatCpf(value));
+    }
+  };
+
   const validateLogin = () => {
     const newErrors: Record<string, string> = {};
     if (!email.trim()) newErrors.email = "E-mail obrigatório";
@@ -180,10 +221,11 @@ export default function AuthScreen() {
                   : "000.000.000-00"
               }
               value={cpfCnpj}
-              onChangeText={setCpfCnpj}
+              onChangeText={handleCpfCnpjChange}
               error={errors.cpfCnpj}
               leftIcon="file-text"
               keyboardType="numeric"
+              maxLength={selectedRole === "empresa" ? 18 : 14}
             />
 
             {selectedRole === "enfermeiro" ? (
