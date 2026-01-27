@@ -86,22 +86,25 @@ export default function AuthScreen() {
   };
 
   const formatTelefone = (value: string) => {
-    const numbers = value.replace(/\D/g, "").slice(0, 11);
+    const numbers = value.replace(/\D/g, "");
     if (numbers.length === 0) return "";
     
-    let formatted = "(" + numbers.slice(0, 2);
-    if (numbers.length > 2) {
-      formatted += ")" + numbers.slice(2);
+    const isMobile = numbers.length > 2 && numbers.charAt(2) === "9";
+    const maxDigits = isMobile ? 11 : 10;
+    const slicedNumbers = numbers.slice(0, maxDigits);
+    
+    let formatted = "(" + slicedNumbers.slice(0, 2);
+    if (slicedNumbers.length > 2) {
+      formatted += ")" + slicedNumbers.slice(2);
     }
-    if (numbers.length > 2) {
-      const afterDdd = numbers.slice(2);
-      if (afterDdd.charAt(0) === "9") {
-        if (numbers.length > 7) {
-          formatted = "(" + numbers.slice(0, 2) + ")" + numbers.slice(2, 7) + "-" + numbers.slice(7);
+    if (slicedNumbers.length > 2) {
+      if (isMobile) {
+        if (slicedNumbers.length > 7) {
+          formatted = "(" + slicedNumbers.slice(0, 2) + ")" + slicedNumbers.slice(2, 7) + "-" + slicedNumbers.slice(7);
         }
       } else {
-        if (numbers.length > 6) {
-          formatted = "(" + numbers.slice(0, 2) + ")" + numbers.slice(2, 6) + "-" + numbers.slice(6);
+        if (slicedNumbers.length > 6) {
+          formatted = "(" + slicedNumbers.slice(0, 2) + ")" + slicedNumbers.slice(2, 6) + "-" + slicedNumbers.slice(6);
         }
       }
     }
