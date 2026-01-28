@@ -311,7 +311,7 @@ export default function ProfileDetailScreen() {
           <View style={styles.restrictedNotice}>
             <Feather name="lock" size={24} color={Colors.light.accent2} />
             <ThemedText type="small" style={styles.restrictedNoticeText}>
-              Disponível apenas para contratantes
+              Assine para liberar seu contato aos contratantes
             </ThemedText>
           </View>
         ) : canViewContactInfo && subscription && subscription.status === "ativo" ? (
