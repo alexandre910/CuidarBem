@@ -308,12 +308,15 @@ export default function ProfileDetailScreen() {
           Contato
         </ThemedText>
         {isProfessional && isViewingProfessional ? (
-          <View style={styles.restrictedNotice}>
+          <Pressable 
+            style={styles.restrictedNotice}
+            onPress={() => navigation.navigate("ProfileTab" as any, { screen: "Subscription" })}
+          >
             <Feather name="lock" size={24} color={Colors.light.accent2} />
             <ThemedText type="small" style={styles.restrictedNoticeText}>
               Assine para liberar seu contato aos contratantes
             </ThemedText>
-          </View>
+          </Pressable>
         ) : canViewContactInfo && subscription && subscription.status === "ativo" ? (
           <View style={styles.contactInfo}>
             <View style={styles.contactRow}>
