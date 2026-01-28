@@ -1,5 +1,8 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Pressable } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 import ProfileScreen from "@/screens/ProfileScreen";
 import SubscriptionScreen from "@/screens/SubscriptionScreen";
@@ -8,6 +11,7 @@ import ServiceHistoryScreen from "@/screens/ServiceHistoryScreen";
 import PaymentHistoryScreen from "@/screens/PaymentHistoryScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { getCommonScreenOptions } from "@/navigation/screenOptions";
+import { Colors, Spacing } from "@/constants/theme";
 
 export type ProfileStackParamList = {
   Profile: { openSection?: "dados" | "valores" } | undefined;
@@ -19,6 +23,18 @@ export type ProfileStackParamList = {
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
 
+function ProfileBackButton() {
+  const navigation = useNavigation<any>();
+  return (
+    <Pressable
+      onPress={() => navigation.navigate("SearchTab")}
+      style={{ paddingRight: Spacing.md }}
+    >
+      <Feather name="arrow-left" size={24} color={Colors.light.text} />
+    </Pressable>
+  );
+}
+
 export default function ProfileStackNavigator() {
   const { theme, isDark } = useTheme();
 
@@ -29,6 +45,7 @@ export default function ProfileStackNavigator() {
         component={ProfileScreen}
         options={{
           title: "Meu Perfil",
+          headerLeft: () => <ProfileBackButton />,
         }}
       />
       <Stack.Screen
