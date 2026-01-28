@@ -243,7 +243,7 @@ export default function SubscriptionScreen() {
         `Seu ${plan.title} foi ativado com sucesso via ${paymentMethodLabel}! Válido até ${expirationDate.toLocaleDateString("pt-BR")}.\n\nComplete a disponibilidade e valores no seu perfil para liberar acesso ao seu e-mail, telefone e receber ou enviar mensagens ao contratante.\n\nAo concluir o preenchimento de disponibilidade (por hora, por dia ou por mês) e valores, estará liberado.`,
         [
           {
-            text: "Ir para Meu Perfil",
+            text: "Ir para Valores de Serviços",
             onPress: () => navigation.goBack(),
           },
         ]
