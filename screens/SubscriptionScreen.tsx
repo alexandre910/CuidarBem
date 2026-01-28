@@ -244,7 +244,7 @@ export default function SubscriptionScreen() {
         [
           {
             text: "Ir para Valores de Serviços",
-            onPress: () => navigation.goBack(),
+            onPress: () => navigation.navigate("Profile" as any, { openSection: "valores" }),
           },
         ]
       );

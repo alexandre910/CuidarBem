@@ -3,7 +3,7 @@ import { StyleSheet, View, Alert, Pressable, Platform } from "react-native";
 import type { ScrollView } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { ScreenKeyboardAwareScrollView } from "@/components/ScreenKeyboardAwareScrollView";
@@ -20,6 +20,7 @@ import { AvailabilityType } from "@/types";
 import { ProfileStackParamList } from "@/navigation/ProfileStackNavigator";
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList>;
+type ProfileRouteProp = RouteProp<ProfileStackParamList, "Profile">;
 
 const availabilityOptions: { value: AvailabilityType; label: string }[] = [
   { value: "hora", label: "Hora" },
@@ -29,10 +30,17 @@ const availabilityOptions: { value: AvailabilityType; label: string }[] = [
 
 export default function ProfileScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<ProfileRouteProp>();
   const { user, subscription, updateProfile, logout } = useAuth();
   const { favorites, serviceHistory } = useData();
   const scrollViewRef = useRef<ScrollView>(null);
   const [expandedSection, setExpandedSection] = useState<"dados" | "valores" | null>(null);
+
+  useEffect(() => {
+    if (route.params?.openSection) {
+      setExpandedSection(route.params.openSection);
+    }
+  }, [route.params?.openSection]);
 
   const toggleSection = (section: "dados" | "valores") => {
     setExpandedSection(expandedSection === section ? null : section);

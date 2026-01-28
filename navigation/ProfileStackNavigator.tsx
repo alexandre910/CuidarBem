@@ -10,7 +10,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { getCommonScreenOptions } from "@/navigation/screenOptions";
 
 export type ProfileStackParamList = {
-  Profile: undefined;
+  Profile: { openSection?: "dados" | "valores" } | undefined;
   Subscription: undefined;
   Favorites: undefined;
   ServiceHistory: undefined;
