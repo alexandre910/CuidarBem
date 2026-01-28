@@ -18,7 +18,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/context/AuthContext";
 import { Colors, Spacing, BorderRadius, Shadows } from "@/constants/theme";
-import { Subscription } from "@/types";
+import { Subscription, Cuidador, Enfermeiro } from "@/types";
 
 const plans = [
   {
@@ -54,7 +54,7 @@ type PixKeyType = "cpf" | "email" | "celular" | "aleatoria";
 
 export default function SubscriptionScreen() {
   const navigation = useNavigation();
-  const { user, subscription, updateSubscription } = useAuth();
+  const { user, subscription, updateSubscription, updateProfile } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const [paymentModal, setPaymentModal] = useState(false);
@@ -168,7 +168,7 @@ export default function SubscriptionScreen() {
   const handleCancelSubscription = () => {
     Alert.alert(
       "Cancelar Assinatura",
-      "Tem certeza que deseja cancelar sua assinatura? Você perderá acesso aos recursos premium.",
+      "Tem certeza que deseja cancelar sua assinatura? Você perderá acesso aos recursos premium e sua disponibilidade e valores serão zerados.",
       [
         { text: "Não", style: "cancel" },
         {
@@ -181,7 +181,18 @@ export default function SubscriptionScreen() {
                 status: "cancelado",
               };
               await updateSubscription(cancelledSubscription);
-              Alert.alert("Assinatura Cancelada", "Sua assinatura foi cancelada com sucesso.");
+              
+              if (user && (user.role === "cuidador" || user.role === "enfermeiro")) {
+                const resetData: Partial<Cuidador | Enfermeiro> = {
+                  disponibilidade: [],
+                  valorHora: undefined,
+                  valorDia: undefined,
+                  valorMensal: undefined,
+                };
+                await updateProfile(resetData);
+              }
+              
+              Alert.alert("Assinatura Cancelada", "Sua assinatura foi cancelada com sucesso. Sua disponibilidade e valores foram zerados.");
             }
           },
         },
