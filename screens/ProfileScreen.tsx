@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { StyleSheet, View, Alert, Pressable, Platform } from "react-native";
 import type { ScrollView } from "react-native";
 import { Feather } from "@expo/vector-icons";
@@ -63,6 +63,34 @@ export default function ProfileScreen() {
 
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    if (user) {
+      setNome(user.nome || "");
+      setTelefone(user.telefone || "");
+      setCidade(user.cidade || "");
+      setFoto(user.foto || "");
+      
+      if (user.role === "cuidador" || user.role === "enfermeiro") {
+        if ("disponibilidade" in user) {
+          setDisponibilidade(user.disponibilidade || []);
+        }
+        if ("valorHora" in user) {
+          setValorHora(user.valorHora ? String(user.valorHora) : "");
+        }
+        if ("valorDia" in user) {
+          setValorDia(user.valorDia ? String(user.valorDia) : "");
+        }
+        if ("valorMensal" in user) {
+          setValorMensal(user.valorMensal ? String(user.valorMensal) : "");
+        }
+      }
+      
+      if (user.role === "enfermeiro" && "corenDocumento" in user) {
+        setCorenDocumento(user.corenDocumento || "");
+      }
+    }
+  }, [user]);
+
   const pickImage = async () => {
     if (Platform.OS === "web") {
       Alert.alert("Funcionalidade", "Use o Expo Go para capturar fotos.");
@@ -122,6 +150,8 @@ export default function ProfileScreen() {
   };
 
   const handleSave = async () => {
+    if (!user) return;
+    
     setSaving(true);
     
     const updates: any = {
@@ -131,14 +161,17 @@ export default function ProfileScreen() {
       foto,
     };
 
-    if (isProfessional) {
+    const userIsProfessional = user.role === "cuidador" || user.role === "enfermeiro";
+    const userIsEnfermeiro = user.role === "enfermeiro";
+
+    if (userIsProfessional) {
       updates.disponibilidade = disponibilidade;
       updates.valorHora = parseFloat(valorHora) || 0;
       updates.valorDia = parseFloat(valorDia) || 0;
       updates.valorMensal = parseFloat(valorMensal) || 0;
     }
 
-    if (isEnfermeiro) {
+    if (userIsEnfermeiro) {
       updates.corenDocumento = corenDocumento;
     }
 
