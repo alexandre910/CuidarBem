@@ -71,7 +71,7 @@ export default function MainTabNavigator() {
         options={{
           title: "Chat",
           tabBarIcon: ({ color, size }) => (
-            <View>
+            <View style={{ width: size, height: size }}>
               <Feather name="message-circle" size={size} color={color} />
               {unreadCount > 0 ? (
                 <View style={styles.badge}>
