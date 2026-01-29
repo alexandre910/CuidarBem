@@ -49,19 +49,31 @@ function ProfileBackButton() {
 
 function StackBackButton() {
   const navigation = useNavigation<any>();
+  
+  const handlePress = () => {
+    console.log("StackBackButton pressed, canGoBack:", navigation.canGoBack());
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      console.log("Navigating to Profile");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Profile" }],
+      });
+    }
+  };
+  
   return (
     <Pressable
-      onPress={() => {
-        if (navigation.canGoBack()) {
-          navigation.goBack();
-        } else {
-          navigation.navigate("Profile");
-        }
-      }}
-      hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+      onPress={handlePress}
+      hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
       style={{ 
-        padding: Spacing.sm,
+        padding: Spacing.md,
         marginLeft: -Spacing.sm,
+        minWidth: 44,
+        minHeight: 44,
+        justifyContent: "center",
+        alignItems: "center",
       }}
     >
       <Feather name="arrow-left" size={24} color={Colors.light.text} />
