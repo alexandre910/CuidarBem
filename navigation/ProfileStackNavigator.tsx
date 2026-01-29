@@ -36,7 +36,11 @@ function ProfileBackButton() {
           })
         );
       }}
-      style={{ paddingRight: Spacing.md }}
+      hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+      style={{ 
+        padding: Spacing.sm,
+        marginLeft: -Spacing.sm,
+      }}
     >
       <Feather name="arrow-left" size={24} color={Colors.light.text} />
     </Pressable>
@@ -54,7 +58,11 @@ function StackBackButton() {
           navigation.navigate("Profile");
         }
       }}
-      style={{ paddingRight: Spacing.md }}
+      hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+      style={{ 
+        padding: Spacing.sm,
+        marginLeft: -Spacing.sm,
+      }}
     >
       <Feather name="arrow-left" size={24} color={Colors.light.text} />
     </Pressable>
