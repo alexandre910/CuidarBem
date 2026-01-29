@@ -1,8 +1,8 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Pressable } from "react-native";
+import { TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { useNavigation, CommonActions } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 
 import ProfileScreen from "@/screens/ProfileScreen";
 import SubscriptionScreen from "@/screens/SubscriptionScreen";
@@ -27,49 +27,21 @@ const Stack = createNativeStackNavigator<ProfileStackParamList>();
 
 function ProfileBackButton() {
   const navigation = useNavigation<any>();
-  return (
-    <Pressable
-      onPress={() => {
-        navigation.dispatch(
-          CommonActions.navigate({
-            name: "SearchTab",
-          })
-        );
-      }}
-      hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-      style={{ 
-        padding: Spacing.sm,
-        marginLeft: -Spacing.sm,
-      }}
-    >
-      <Feather name="arrow-left" size={24} color={Colors.light.text} />
-    </Pressable>
-  );
-}
-
-function StackBackButton() {
-  const navigation = useNavigation<any>();
   
-  const handlePress = () => {
-    console.log("StackBackButton pressed, canGoBack:", navigation.canGoBack());
-    if (navigation.canGoBack()) {
-      navigation.goBack();
-    } else {
-      console.log("Navigating to Profile");
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Profile" }],
-      });
+  const handleGoToSearch = () => {
+    const parent = navigation.getParent();
+    if (parent) {
+      parent.navigate("SearchTab");
     }
   };
   
   return (
-    <Pressable
-      onPress={handlePress}
-      hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+    <TouchableOpacity
+      onPress={handleGoToSearch}
+      activeOpacity={0.7}
       style={{ 
         padding: Spacing.md,
-        marginLeft: -Spacing.sm,
+        marginLeft: -Spacing.xs,
         minWidth: 44,
         minHeight: 44,
         justifyContent: "center",
@@ -77,7 +49,7 @@ function StackBackButton() {
       }}
     >
       <Feather name="arrow-left" size={24} color={Colors.light.text} />
-    </Pressable>
+    </TouchableOpacity>
   );
 }
 
