@@ -233,30 +233,6 @@ export default function AuthScreen() {
       <View style={styles.form}>
         {mode === "register" ? (
           <>
-            <Input
-              label="Nome completo"
-              placeholder="Nome e sobrenome"
-              value={nome}
-              onChangeText={setNome}
-              onBlur={(e) => {
-                const nomeParts = nome.trim().split(/\s+/).filter(part => part.length > 0);
-                if (nome.trim() && nomeParts.length < 2) {
-                  setErrors(prev => ({ ...prev, nome: "Digite seu nome completo (nome e sobrenome)" }));
-                } else {
-                  setErrors(prev => {
-                    const newErrors = { ...prev };
-                    delete newErrors.nome;
-                    return newErrors;
-                  });
-                }
-              }}
-              error={errors.nome}
-              leftIcon="user"
-              autoCapitalize="words"
-              returnKeyType="next"
-              onSubmitEditing={() => cpfCnpjRef.current?.focus()}
-            />
-
             <View style={styles.roleSection}>
               <ThemedText type="small" style={styles.roleLabel}>
                 Você é:
@@ -285,6 +261,30 @@ export default function AuthScreen() {
                 ))}
               </View>
             </View>
+
+            <Input
+              label="Nome completo"
+              placeholder="Nome e sobrenome"
+              value={nome}
+              onChangeText={setNome}
+              onBlur={(e) => {
+                const nomeParts = nome.trim().split(/\s+/).filter(part => part.length > 0);
+                if (nome.trim() && nomeParts.length < 2) {
+                  setErrors(prev => ({ ...prev, nome: "Digite seu nome completo (nome e sobrenome)" }));
+                } else {
+                  setErrors(prev => {
+                    const newErrors = { ...prev };
+                    delete newErrors.nome;
+                    return newErrors;
+                  });
+                }
+              }}
+              error={errors.nome}
+              leftIcon="user"
+              autoCapitalize="words"
+              returnKeyType="next"
+              onSubmitEditing={() => cpfCnpjRef.current?.focus()}
+            />
 
             <Input
               ref={cpfCnpjRef}
