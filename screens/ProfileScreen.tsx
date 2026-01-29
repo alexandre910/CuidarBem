@@ -16,17 +16,11 @@ import { Card } from "@/components/Card";
 import { useAuth } from "@/context/AuthContext";
 import { useData } from "@/context/DataContext";
 import { Colors, Spacing, BorderRadius, Shadows } from "@/constants/theme";
-import { AvailabilityType } from "@/types";
 import { ProfileStackParamList } from "@/navigation/ProfileStackNavigator";
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList>;
 type ProfileRouteProp = RouteProp<ProfileStackParamList, "Profile">;
 
-const availabilityOptions: { value: AvailabilityType; label: string }[] = [
-  { value: "hora", label: "Hora" },
-  { value: "dia", label: "Dia" },
-  { value: "mes", label: "Mês" },
-];
 
 export default function ProfileScreen() {
   const navigation = useNavigation<NavigationProp>();
@@ -34,15 +28,15 @@ export default function ProfileScreen() {
   const { user, subscription, updateProfile, logout } = useAuth();
   const { favorites, serviceHistory } = useData();
   const scrollViewRef = useRef<ScrollView>(null);
-  const [expandedSection, setExpandedSection] = useState<"dados" | "valores" | null>(null);
+  const [expandedSection, setExpandedSection] = useState<"dados" | null>(null);
 
   useEffect(() => {
-    if (route.params?.openSection) {
-      setExpandedSection(route.params.openSection);
+    if (route.params?.openSection === "dados") {
+      setExpandedSection("dados");
     }
   }, [route.params?.openSection]);
 
-  const toggleSection = (section: "dados" | "valores") => {
+  const toggleSection = (section: "dados") => {
     setExpandedSection(expandedSection === section ? null : section);
   };
 
@@ -53,18 +47,6 @@ export default function ProfileScreen() {
   
   const isProfessional = user?.role === "cuidador" || user?.role === "enfermeiro";
   const isEnfermeiro = user?.role === "enfermeiro";
-  const [disponibilidade, setDisponibilidade] = useState<AvailabilityType[]>(
-    isProfessional && user && "disponibilidade" in user ? user.disponibilidade : []
-  );
-  const [valorHora, setValorHora] = useState(
-    isProfessional && user && "valorHora" in user ? String(user.valorHora || "") : ""
-  );
-  const [valorDia, setValorDia] = useState(
-    isProfessional && user && "valorDia" in user ? String(user.valorDia || "") : ""
-  );
-  const [valorMensal, setValorMensal] = useState(
-    isProfessional && user && "valorMensal" in user ? String(user.valorMensal || "") : ""
-  );
   const [corenDocumento, setCorenDocumento] = useState(
     isEnfermeiro && user && "corenDocumento" in user ? user.corenDocumento || "" : ""
   );
@@ -77,21 +59,6 @@ export default function ProfileScreen() {
       setTelefone(user.telefone || "");
       setCidade(user.cidade || "");
       setFoto(user.foto || "");
-      
-      if (user.role === "cuidador" || user.role === "enfermeiro") {
-        if ("disponibilidade" in user) {
-          setDisponibilidade(user.disponibilidade || []);
-        }
-        if ("valorHora" in user) {
-          setValorHora(user.valorHora ? String(user.valorHora) : "");
-        }
-        if ("valorDia" in user) {
-          setValorDia(user.valorDia ? String(user.valorDia) : "");
-        }
-        if ("valorMensal" in user) {
-          setValorMensal(user.valorMensal ? String(user.valorMensal) : "");
-        }
-      }
       
       if (user.role === "enfermeiro" && "corenDocumento" in user) {
         setCorenDocumento(user.corenDocumento || "");
@@ -149,14 +116,7 @@ export default function ProfileScreen() {
     }
   };
 
-  const toggleAvailability = (type: AvailabilityType) => {
-    if (disponibilidade.includes(type)) {
-      setDisponibilidade(disponibilidade.filter((d) => d !== type));
-    } else {
-      setDisponibilidade([...disponibilidade, type]);
-    }
-  };
-
+  
   const handleSave = async () => {
     if (!user) return;
     
@@ -169,15 +129,7 @@ export default function ProfileScreen() {
       foto,
     };
 
-    const userIsProfessional = user.role === "cuidador" || user.role === "enfermeiro";
     const userIsEnfermeiro = user.role === "enfermeiro";
-
-    if (userIsProfessional) {
-      updates.disponibilidade = disponibilidade;
-      updates.valorHora = parseFloat(valorHora) || 0;
-      updates.valorDia = parseFloat(valorDia) || 0;
-      updates.valorMensal = parseFloat(valorMensal) || 0;
-    }
 
     if (userIsEnfermeiro) {
       updates.corenDocumento = corenDocumento;
@@ -363,78 +315,22 @@ export default function ProfileScreen() {
         ) : null}
 
         {isProfessional ? (
-          <>
-            <Pressable
-              style={[styles.quickActionItem, styles.quickActionItemLast]}
-              onPress={() => toggleSection("valores")}
-            >
-              <View style={styles.quickActionLeft}>
-                <Feather name="dollar-sign" size={20} color={Colors.light.success} />
-                <ThemedText type="body" style={styles.quickActionText}>
-                  Valores de Serviços
-                </ThemedText>
-              </View>
-              <Feather 
-                name={expandedSection === "valores" ? "chevron-down" : "chevron-right"} 
-                size={20} 
-                color="#CCCCCC" 
-              />
-            </Pressable>
-
-            {expandedSection === "valores" ? (
-              <View style={styles.expandedSection}>
-                <Input
-                  label="Valor por Hora (R$)"
-                  value={valorHora}
-                  onChangeText={setValorHora}
-                  keyboardType="decimal-pad"
-                  placeholder="0,00"
-                />
-
-                <Input
-                  label="Valor por Dia (R$)"
-                  value={valorDia}
-                  onChangeText={setValorDia}
-                  keyboardType="decimal-pad"
-                  placeholder="0,00"
-                />
-
-                <Input
-                  label="Valor Mensal (R$)"
-                  value={valorMensal}
-                  onChangeText={setValorMensal}
-                  keyboardType="decimal-pad"
-                  placeholder="0,00"
-                />
-
-                <ThemedText type="body" style={styles.disponibilidadeLabel}>
-                  Disponibilidade
-                </ThemedText>
-                <View style={styles.availabilityOptions}>
-                  {availabilityOptions.map((option) => (
-                    <Pressable
-                      key={option.value}
-                      onPress={() => toggleAvailability(option.value)}
-                      style={[
-                        styles.availabilityOption,
-                        disponibilidade.includes(option.value) && styles.availabilityOptionActive,
-                      ]}
-                    >
-                      <ThemedText
-                        type="body"
-                        style={[
-                          styles.availabilityText,
-                          disponibilidade.includes(option.value) && styles.availabilityTextActive,
-                        ]}
-                      >
-                        {option.label}
-                      </ThemedText>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-            ) : null}
-          </>
+          <Pressable
+            style={[styles.quickActionItem, styles.quickActionItemLast]}
+            onPress={() => navigation.navigate("ServiceValues")}
+          >
+            <View style={styles.quickActionLeft}>
+              <Feather name="dollar-sign" size={20} color={Colors.light.success} />
+              <ThemedText type="body" style={styles.quickActionText}>
+                Valores de Serviços
+              </ThemedText>
+            </View>
+            <Feather 
+              name="chevron-right" 
+              size={20} 
+              color="#CCCCCC" 
+            />
+          </Pressable>
         ) : null}
       </View>
 

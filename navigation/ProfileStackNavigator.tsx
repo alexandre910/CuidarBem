@@ -9,16 +9,18 @@ import SubscriptionScreen from "@/screens/SubscriptionScreen";
 import FavoritesScreen from "@/screens/FavoritesScreen";
 import ServiceHistoryScreen from "@/screens/ServiceHistoryScreen";
 import PaymentHistoryScreen from "@/screens/PaymentHistoryScreen";
+import ServiceValuesScreen from "@/screens/ServiceValuesScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { getCommonScreenOptions } from "@/navigation/screenOptions";
 import { Colors, Spacing } from "@/constants/theme";
 
 export type ProfileStackParamList = {
-  Profile: { openSection?: "dados" | "valores" } | undefined;
+  Profile: { openSection?: "dados" } | undefined;
   Subscription: undefined;
   Favorites: undefined;
   ServiceHistory: undefined;
   PaymentHistory: undefined;
+  ServiceValues: undefined;
 };
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -79,6 +81,13 @@ export default function ProfileStackNavigator() {
         component={PaymentHistoryScreen}
         options={{
           title: "Pagamentos",
+        }}
+      />
+      <Stack.Screen
+        name="ServiceValues"
+        component={ServiceValuesScreen}
+        options={{
+          title: "Valores de Serviços",
         }}
       />
     </Stack.Navigator>

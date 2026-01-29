@@ -169,8 +169,26 @@ export default function AuthScreen() {
   };
 
   const handleRegister = async () => {
-    if (!validateRegister()) return;
+    console.log("handleRegister called, validating...");
+    const validationErrors = { ...errors };
+    if (!nome.trim()) validationErrors.nome = "Nome obrigatório";
+    if (!email.trim()) validationErrors.email = "E-mail obrigatório";
+    if (!cpfCnpj.trim()) validationErrors.cpfCnpj = "CPF/CNPJ obrigatório";
+    if (!telefone.trim()) validationErrors.telefone = "Telefone obrigatório";
+    if (!cidade.trim()) validationErrors.cidade = "Cidade obrigatória";
+    if (!password) validationErrors.password = "Senha obrigatória";
+    if (password.length < 6) validationErrors.password = "Senha deve ter no mínimo 6 caracteres";
+    if (password !== confirmPassword) validationErrors.confirmPassword = "Senhas não coincidem";
+    
+    console.log("Form values:", { nome, email, cpfCnpj, telefone, cidade, password: password.length, confirmPassword: confirmPassword.length });
+    console.log("Validation errors:", Object.keys(validationErrors).filter(k => validationErrors[k as keyof typeof validationErrors]));
+    
+    if (!validateRegister()) {
+      console.log("Validation failed");
+      return;
+    }
 
+    console.log("Validation passed, calling register...");
     setLoading(true);
     const success = await register({
       email,
@@ -182,6 +200,7 @@ export default function AuthScreen() {
       role: selectedRole,
       coren: selectedRole === "enfermeiro" ? coren : undefined,
     });
+    console.log("Register result:", success);
     setLoading(false);
 
     if (!success) {
