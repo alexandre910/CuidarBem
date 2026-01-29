@@ -27,7 +27,12 @@ function ProfileBackButton() {
   const navigation = useNavigation<any>();
   return (
     <Pressable
-      onPress={() => navigation.navigate("SearchTab")}
+      onPress={() => {
+        const parent = navigation.getParent();
+        if (parent) {
+          parent.navigate("SearchTab");
+        }
+      }}
       style={{ paddingRight: Spacing.md }}
     >
       <Feather name="arrow-left" size={24} color={Colors.light.text} />
