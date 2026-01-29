@@ -2,7 +2,7 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Pressable } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, CommonActions } from "@react-navigation/native";
 
 import ProfileScreen from "@/screens/ProfileScreen";
 import SubscriptionScreen from "@/screens/SubscriptionScreen";
@@ -30,10 +30,11 @@ function ProfileBackButton() {
   return (
     <Pressable
       onPress={() => {
-        const parent = navigation.getParent();
-        if (parent) {
-          parent.navigate("SearchTab");
-        }
+        navigation.dispatch(
+          CommonActions.navigate({
+            name: "SearchTab",
+          })
+        );
       }}
       style={{ paddingRight: Spacing.md }}
     >
