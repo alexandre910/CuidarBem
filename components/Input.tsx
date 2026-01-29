@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef } from "react";
 import { 
   StyleSheet, 
   TextInput, 
@@ -20,10 +20,9 @@ interface InputProps extends TextInputProps {
   leftIcon?: keyof typeof Feather.glyphMap;
   rightIcon?: keyof typeof Feather.glyphMap;
   onRightIconPress?: () => void;
-  onBlur?: () => void;
 }
 
-export function Input({
+export const Input = forwardRef<TextInput, InputProps>(({
   label,
   error,
   containerStyle,
@@ -34,7 +33,7 @@ export function Input({
   style,
   onBlur,
   ...props
-}: InputProps) {
+}, ref) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -64,6 +63,7 @@ export function Input({
           />
         ) : null}
         <TextInput
+          ref={ref}
           style={[
             styles.input,
             leftIcon ? styles.inputWithLeftIcon : null,
@@ -72,9 +72,9 @@ export function Input({
           ]}
           placeholderTextColor="#999999"
           onFocus={() => setIsFocused(true)}
-          onBlur={() => {
+          onBlur={(e) => {
             setIsFocused(false);
-            if (onBlur) onBlur();
+            if (onBlur) onBlur(e);
           }}
           secureTextEntry={isPassword && !showPassword}
           {...props}
@@ -103,7 +103,7 @@ export function Input({
       ) : null}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

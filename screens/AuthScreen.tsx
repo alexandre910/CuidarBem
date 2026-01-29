@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   StyleSheet,
   View,
@@ -6,6 +6,7 @@ import {
   Pressable,
   Alert,
   Platform,
+  TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -43,6 +44,14 @@ export default function AuthScreen() {
   const [selectedRole, setSelectedRole] = useState<UserRole>("contratante");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const cpfCnpjRef = useRef<TextInput>(null);
+  const corenRef = useRef<TextInput>(null);
+  const telefoneRef = useRef<TextInput>(null);
+  const cidadeRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmPasswordRef = useRef<TextInput>(null);
 
   const handleRoleChange = (role: UserRole) => {
     if (role !== selectedRole) {
@@ -229,7 +238,7 @@ export default function AuthScreen() {
               placeholder="Nome e sobrenome"
               value={nome}
               onChangeText={setNome}
-              onBlur={() => {
+              onBlur={(e) => {
                 const nomeParts = nome.trim().split(/\s+/).filter(part => part.length > 0);
                 if (nome.trim() && nomeParts.length < 2) {
                   setErrors(prev => ({ ...prev, nome: "Digite seu nome completo (nome e sobrenome)" }));
@@ -244,6 +253,8 @@ export default function AuthScreen() {
               error={errors.nome}
               leftIcon="user"
               autoCapitalize="words"
+              returnKeyType="next"
+              onSubmitEditing={() => cpfCnpjRef.current?.focus()}
             />
 
             <View style={styles.roleSection}>
@@ -276,6 +287,7 @@ export default function AuthScreen() {
             </View>
 
             <Input
+              ref={cpfCnpjRef}
               label={selectedRole === "empresa" ? "CNPJ" : "CPF"}
               placeholder={
                 selectedRole === "empresa"
@@ -288,20 +300,32 @@ export default function AuthScreen() {
               leftIcon="file-text"
               keyboardType="numeric"
               maxLength={selectedRole === "empresa" ? 18 : 14}
+              returnKeyType="next"
+              onSubmitEditing={() => {
+                if (selectedRole === "enfermeiro") {
+                  corenRef.current?.focus();
+                } else {
+                  telefoneRef.current?.focus();
+                }
+              }}
             />
 
             {selectedRole === "enfermeiro" ? (
               <Input
+                ref={corenRef}
                 label="COREN"
                 placeholder="COREN-XX 000000"
                 value={coren}
                 onChangeText={setCoren}
                 error={errors.coren}
                 leftIcon="award"
+                returnKeyType="next"
+                onSubmitEditing={() => telefoneRef.current?.focus()}
               />
             ) : null}
 
             <Input
+              ref={telefoneRef}
               label="Telefone"
               placeholder="(00) 00000-0000"
               value={telefone}
@@ -310,20 +334,26 @@ export default function AuthScreen() {
               leftIcon="phone"
               keyboardType="phone-pad"
               maxLength={14}
+              returnKeyType="next"
+              onSubmitEditing={() => cidadeRef.current?.focus()}
             />
 
             <Input
+              ref={cidadeRef}
               label="Cidade"
               placeholder="Sua cidade"
               value={cidade}
               onChangeText={setCidade}
               error={errors.cidade}
               leftIcon="map-pin"
+              returnKeyType="next"
+              onSubmitEditing={() => emailRef.current?.focus()}
             />
           </>
         ) : null}
 
         <Input
+          ref={emailRef}
           label="E-mail"
           placeholder="seu@email.com"
           value={email}
@@ -332,9 +362,12 @@ export default function AuthScreen() {
           leftIcon="mail"
           keyboardType="email-address"
           autoCapitalize="none"
+          returnKeyType="next"
+          onSubmitEditing={() => passwordRef.current?.focus()}
         />
 
         <Input
+          ref={passwordRef}
           label="Senha"
           placeholder="Sua senha"
           value={password}
@@ -342,10 +375,19 @@ export default function AuthScreen() {
           error={errors.password}
           secureTextEntry
           leftIcon="lock"
+          returnKeyType={mode === "register" ? "next" : "done"}
+          onSubmitEditing={() => {
+            if (mode === "register") {
+              confirmPasswordRef.current?.focus();
+            } else {
+              handleLogin();
+            }
+          }}
         />
 
         {mode === "register" ? (
           <Input
+            ref={confirmPasswordRef}
             label="Confirmar Senha"
             placeholder="Confirme sua senha"
             value={confirmPassword}
@@ -353,6 +395,8 @@ export default function AuthScreen() {
             error={errors.confirmPassword}
             secureTextEntry
             leftIcon="lock"
+            returnKeyType="done"
+            onSubmitEditing={handleRegister}
           />
         ) : null}
 
