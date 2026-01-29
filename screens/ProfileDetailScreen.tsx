@@ -7,7 +7,7 @@ import {
   Modal,
   TextInput,
 } from "react-native";
-import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
+import { useRoute, useNavigation, RouteProp, CommonActions } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 
@@ -310,7 +310,17 @@ export default function ProfileDetailScreen() {
         {isProfessional && isViewingProfessional ? (
           <Pressable 
             style={styles.restrictedNotice}
-            onPress={() => navigation.navigate("ProfileTab" as any, { screen: "Subscription" })}
+            onPress={() => {
+              navigation.dispatch(
+                CommonActions.navigate({
+                  name: "ProfileTab",
+                  params: {
+                    screen: "Subscription",
+                    initial: false,
+                  },
+                })
+              );
+            }}
           >
             <Feather name="lock" size={24} color={Colors.light.accent2} />
             <ThemedText type="small" style={styles.restrictedNoticeText}>
@@ -555,9 +565,15 @@ export default function ProfileDetailScreen() {
                 style={styles.viewPlansButton}
                 onPress={() => {
                   setSubscriptionModal(false);
-                  navigation.navigate("ProfileTab" as any, {
-                    screen: "Subscription",
-                  });
+                  navigation.dispatch(
+                    CommonActions.navigate({
+                      name: "ProfileTab",
+                      params: {
+                        screen: "Subscription",
+                        initial: false,
+                      },
+                    })
+                  );
                 }}
               >
                 <ThemedText type="body" style={styles.viewPlansButtonText}>
