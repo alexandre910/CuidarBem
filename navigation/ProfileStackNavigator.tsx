@@ -1,6 +1,6 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
@@ -38,7 +38,6 @@ function ProfileBackButton() {
   return (
     <TouchableOpacity
       onPress={handleGoToSearch}
-      activeOpacity={0.7}
       style={{ 
         padding: Spacing.md,
         marginLeft: -Spacing.xs,
