@@ -20,6 +20,7 @@ interface InputProps extends TextInputProps {
   leftIcon?: keyof typeof Feather.glyphMap;
   rightIcon?: keyof typeof Feather.glyphMap;
   onRightIconPress?: () => void;
+  onBlur?: () => void;
 }
 
 export function Input({
@@ -31,6 +32,7 @@ export function Input({
   onRightIconPress,
   secureTextEntry,
   style,
+  onBlur,
   ...props
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
@@ -70,7 +72,10 @@ export function Input({
           ]}
           placeholderTextColor="#999999"
           onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onBlur={() => {
+            setIsFocused(false);
+            if (onBlur) onBlur();
+          }}
           secureTextEntry={isPassword && !showPassword}
           {...props}
         />
