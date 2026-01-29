@@ -43,6 +43,24 @@ function ProfileBackButton() {
   );
 }
 
+function StackBackButton() {
+  const navigation = useNavigation<any>();
+  return (
+    <Pressable
+      onPress={() => {
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else {
+          navigation.navigate("Profile");
+        }
+      }}
+      style={{ paddingRight: Spacing.md }}
+    >
+      <Feather name="arrow-left" size={24} color={Colors.light.text} />
+    </Pressable>
+  );
+}
+
 export default function ProfileStackNavigator() {
   const { theme, isDark } = useTheme();
 
@@ -61,6 +79,7 @@ export default function ProfileStackNavigator() {
         component={SubscriptionScreen}
         options={{
           title: "Assinatura",
+          headerLeft: () => <StackBackButton />,
         }}
       />
       <Stack.Screen
@@ -89,6 +108,7 @@ export default function ProfileStackNavigator() {
         component={ServiceValuesScreen}
         options={{
           title: "Valores de Serviços",
+          headerLeft: () => <StackBackButton />,
         }}
       />
     </Stack.Navigator>

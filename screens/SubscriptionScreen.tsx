@@ -12,6 +12,7 @@ import {
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { ScreenScrollView } from "@/components/ScreenScrollView";
 import { ThemedText } from "@/components/ThemedText";
@@ -19,6 +20,9 @@ import { Button } from "@/components/Button";
 import { useAuth } from "@/context/AuthContext";
 import { Colors, Spacing, BorderRadius, Shadows } from "@/constants/theme";
 import { Subscription, Cuidador, Enfermeiro } from "@/types";
+import { ProfileStackParamList } from "@/navigation/ProfileStackNavigator";
+
+type NavigationProp = NativeStackNavigationProp<ProfileStackParamList>;
 
 const plans = [
   {
@@ -53,7 +57,7 @@ type PaymentMethod = "pix" | "cartao";
 type PixKeyType = "cpf" | "email" | "celular" | "aleatoria";
 
 export default function SubscriptionScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const { user, subscription, updateSubscription, updateProfile } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -244,7 +248,7 @@ export default function SubscriptionScreen() {
         [
           {
             text: "Ir para Valores de Serviços",
-            onPress: () => navigation.navigate("ServiceValues" as any),
+            onPress: () => navigation.navigate("ServiceValues"),
           },
         ]
       );
