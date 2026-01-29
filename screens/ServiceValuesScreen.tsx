@@ -205,6 +205,15 @@ const styles = StyleSheet.create({
   saveButton: {
     marginTop: Spacing.lg,
     marginBottom: Spacing["2xl"],
+    borderBottomWidth: 4,
+    borderBottomColor: "#00C9B7",
+    borderRightWidth: 2,
+    borderRightColor: "#00C9B7",
+    shadowColor: "#000",
+    shadowOffset: { width: 2, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 6,
   },
   emptyContainer: {
     flex: 1,
