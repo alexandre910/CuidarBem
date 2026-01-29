@@ -310,17 +310,7 @@ export default function ProfileDetailScreen() {
         {isProfessional && isViewingProfessional ? (
           <Pressable 
             style={styles.restrictedNotice}
-            onPress={() => {
-              navigation.dispatch(
-                CommonActions.navigate({
-                  name: "ProfileTab",
-                  params: {
-                    screen: "Subscription",
-                    initial: false,
-                  },
-                })
-              );
-            }}
+            onPress={() => setSubscriptionModal(true)}
           >
             <Feather name="lock" size={24} color={Colors.light.accent2} />
             <ThemedText type="small" style={styles.restrictedNoticeText}>
@@ -551,7 +541,9 @@ export default function ProfileDetailScreen() {
             </ThemedText>
 
             <ThemedText type="body" style={styles.subscriptionModalText}>
-              Para entrar em contato com profissionais, você precisa ter uma assinatura ativa.
+              {isProfessional 
+                ? "Para liberar seu contato aos contratantes, você precisa ter uma assinatura ativa."
+                : "Para entrar em contato com profissionais, você precisa ter uma assinatura ativa."}
             </ThemedText>
 
             <View style={styles.modalButtons}>
