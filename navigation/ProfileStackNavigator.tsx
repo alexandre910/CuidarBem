@@ -99,7 +99,6 @@ export default function ProfileStackNavigator() {
         component={SubscriptionScreen}
         options={{
           title: "Assinatura",
-          headerLeft: () => <StackBackButton />,
         }}
       />
       <Stack.Screen
@@ -128,7 +127,6 @@ export default function ProfileStackNavigator() {
         component={ServiceValuesScreen}
         options={{
           title: "Valores de Serviços",
-          headerLeft: () => <StackBackButton />,
         }}
       />
     </Stack.Navigator>
