@@ -140,7 +140,12 @@ export default function AuthScreen() {
 
   const validateRegister = () => {
     const newErrors: Record<string, string> = {};
-    if (!nome.trim()) newErrors.nome = "Nome obrigatório";
+    const nomeParts = nome.trim().split(/\s+/).filter(part => part.length > 0);
+    if (!nome.trim()) {
+      newErrors.nome = "Nome obrigatório";
+    } else if (nomeParts.length < 2) {
+      newErrors.nome = "Digite seu nome completo (nome e sobrenome)";
+    }
     if (!email.trim()) newErrors.email = "E-mail obrigatório";
     if (!cpfCnpj.trim()) newErrors.cpfCnpj = "CPF/CNPJ obrigatório";
     if (!telefone.trim()) newErrors.telefone = "Telefone obrigatório";
@@ -221,7 +226,7 @@ export default function AuthScreen() {
           <>
             <Input
               label="Nome completo"
-              placeholder="Seu nome"
+              placeholder="Nome e sobrenome"
               value={nome}
               onChangeText={setNome}
               error={errors.nome}
