@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import ConversationsScreen from "@/screens/ConversationsScreen";
 import ChatDetailScreen from "@/screens/ChatDetailScreen";
+import ViewContractorCuidadosScreen from "@/screens/ViewContractorCuidadosScreen";
 import { useTheme } from "@/hooks/useTheme";
 import { useData } from "@/context/DataContext";
 import { useAuth } from "@/context/AuthContext";
@@ -11,6 +12,7 @@ import { getCommonScreenOptions } from "@/navigation/screenOptions";
 export type ChatStackParamList = {
   Conversations: undefined;
   ChatDetail: { conversationId: string };
+  ViewContractorCuidados: { contratanteId: string };
 };
 
 const Stack = createNativeStackNavigator<ChatStackParamList>();
@@ -36,6 +38,14 @@ export default function ChatStackNavigator() {
         component={ChatDetailScreen}
         options={{
           headerTitle: "Chat",
+          ...getCommonScreenOptions({ theme, isDark, transparent: false }),
+        }}
+      />
+      <Stack.Screen
+        name="ViewContractorCuidados"
+        component={ViewContractorCuidadosScreen}
+        options={{
+          headerTitle: "Cuidados do Paciente",
           ...getCommonScreenOptions({ theme, isDark, transparent: false }),
         }}
       />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -6,8 +6,10 @@ import {
   TextInput,
   Pressable,
   Platform,
+  Image,
 } from "react-native";
-import { useRoute, RouteProp } from "@react-navigation/native";
+import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
@@ -26,13 +28,15 @@ import { Message } from "@/types";
 import { ChatStackParamList } from "@/navigation/ChatStackNavigator";
 
 type RouteProps = RouteProp<ChatStackParamList, "ChatDetail">;
+type NavigationProps = NativeStackNavigationProp<ChatStackParamList, "ChatDetail">;
 
 export default function ChatDetailScreen() {
   const route = useRoute<RouteProps>();
+  const navigation = useNavigation<NavigationProps>();
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
-  const { getMessages, sendMessage } = useData();
+  const { getMessages, sendMessage, conversations, getUserById } = useData();
   const { user } = useAuth();
   const { height: keyboardHeight } = useReanimatedKeyboardAnimation();
 
@@ -40,6 +44,50 @@ export default function ChatDetailScreen() {
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+
+  const conversation = conversations.find((c) => c.id === route.params.conversationId);
+  const otherParticipantId = conversation?.participants.find((p) => p !== user?.id);
+  const otherUser = otherParticipantId ? getUserById(otherParticipantId) : null;
+
+  const isProfessional = user?.role === "enfermeiro" || user?.role === "cuidador";
+  const isOtherUserContractor = otherUser?.role === "contratante";
+  const canViewCuidados = isProfessional && isOtherUserContractor;
+
+  useLayoutEffect(() => {
+    if (otherUser) {
+      navigation.setOptions({
+        headerTitle: () => (
+          <Pressable
+            style={styles.headerTitleContainer}
+            onPress={() => {
+              if (canViewCuidados && otherParticipantId) {
+                navigation.navigate("ViewContractorCuidados", { contratanteId: otherParticipantId });
+              }
+            }}
+            disabled={!canViewCuidados}
+          >
+            <View style={[styles.headerAvatar, canViewCuidados && styles.headerAvatarClickable]}>
+              {otherUser.foto ? (
+                <Image source={{ uri: otherUser.foto }} style={styles.headerAvatarImage} />
+              ) : (
+                <Feather name="user" size={18} color={Colors.light.text} />
+              )}
+            </View>
+            <View>
+              <ThemedText type="body" style={styles.headerName} numberOfLines={1}>
+                {otherUser.nome}
+              </ThemedText>
+              {canViewCuidados ? (
+                <ThemedText type="caption" style={styles.headerHint}>
+                  Toque para ver cuidados
+                </ThemedText>
+              ) : null}
+            </View>
+          </Pressable>
+        ),
+      });
+    }
+  }, [navigation, otherUser, canViewCuidados, otherParticipantId]);
 
   const inputContainerStyle = useAnimatedStyle(() => {
     const keyboardOffset = -keyboardHeight.value;
@@ -276,5 +324,36 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: Colors.light.backgroundSecondary,
+  },
+  headerTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  headerAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.light.backgroundSecondary,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  headerAvatarClickable: {
+    borderWidth: 2,
+    borderColor: Colors.light.primary,
+  },
+  headerAvatarImage: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
+  headerName: {
+    fontWeight: "600",
+    maxWidth: 180,
+  },
+  headerHint: {
+    color: Colors.light.primary,
+    fontSize: 10,
   },
 });

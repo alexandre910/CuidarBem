@@ -51,6 +51,7 @@ interface DataContextType {
   rateProfessional: (professionalId: string, rating: number) => Promise<void>;
   getUserRating: (professionalId: string) => number | null;
   getSubscriptionByUserId: (userId: string) => Promise<Subscription | null>;
+  getCuidadosByContratanteId: (contratanteId: string) => Promise<CuidadoPaciente | null>;
   unreadCount: number;
 }
 
@@ -734,6 +735,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const getCuidadosByContratanteId = async (contratanteId: string): Promise<CuidadoPaciente | null> => {
+    try {
+      const stored = await AsyncStorage.getItem(`${STORAGE_KEYS.CUIDADOS}:${contratanteId}`);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+      return null;
+    } catch (error) {
+      console.error("Error getting cuidados:", error);
+      return null;
+    }
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -768,6 +782,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         rateProfessional,
         getUserRating,
         getSubscriptionByUserId,
+        getCuidadosByContratanteId,
         unreadCount,
       }}
     >
