@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     maxWidth: 180,
   },
   headerHint: {
-    color: Colors.light.primary,
+    color: "#DC4429",
     fontSize: 10,
   },
 });
