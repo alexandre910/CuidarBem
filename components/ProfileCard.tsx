@@ -11,13 +11,15 @@ import { ThemedText } from "@/components/ThemedText";
 import { Avatar } from "@/components/Avatar";
 import { RoleBadge } from "@/components/RoleBadge";
 import { StarRating } from "@/components/StarRating";
-import { Cuidador, Enfermeiro } from "@/types";
+import { Cuidador, Enfermeiro, Subscription } from "@/types";
 import { Colors, Spacing, BorderRadius, Shadows } from "@/constants/theme";
 import { Feather } from "@expo/vector-icons";
 
 interface ProfileCardProps {
   profile: Cuidador | Enfermeiro;
   onPress: () => void;
+  isOwnProfile?: boolean;
+  subscription?: Subscription | null;
 }
 
 const springConfig: WithSpringConfig = {
@@ -30,7 +32,7 @@ const springConfig: WithSpringConfig = {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export function ProfileCard({ profile, onPress }: ProfileCardProps) {
+export function ProfileCard({ profile, onPress, isOwnProfile, subscription }: ProfileCardProps) {
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -60,6 +62,8 @@ export function ProfileCard({ profile, onPress }: ProfileCardProps) {
     return labels[disp] || disp;
   };
 
+  const hasActiveSubscription = subscription?.status === "ativo";
+
   return (
     <AnimatedPressable
       onPress={onPress}
@@ -67,6 +71,22 @@ export function ProfileCard({ profile, onPress }: ProfileCardProps) {
       onPressOut={handlePressOut}
       style={[styles.card, animatedStyle]}
     >
+      {isOwnProfile ? (
+        <View style={[
+          styles.subscriptionBanner,
+          hasActiveSubscription ? styles.subscriptionBannerActive : styles.subscriptionBannerInactive
+        ]}>
+          <ThemedText 
+            type="small" 
+            style={[
+              styles.subscriptionBannerText,
+              hasActiveSubscription ? styles.subscriptionTextActive : styles.subscriptionTextInactive
+            ]}
+          >
+            {hasActiveSubscription ? "Assinatura Ativa" : "Assine para aparecer nas buscas"}
+          </ThemedText>
+        </View>
+      ) : null}
       <View style={styles.header}>
         <Avatar uri={profile.foto} size={70} role={profile.role} />
         <View style={styles.headerInfo}>
@@ -220,5 +240,30 @@ const styles = StyleSheet.create({
   priceValue: {
     fontWeight: "600",
     color: Colors.light.text,
+  },
+  subscriptionBanner: {
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 2,
+    marginBottom: Spacing.md,
+    alignItems: "center",
+  },
+  subscriptionBannerInactive: {
+    borderColor: "#DC4429",
+    backgroundColor: "rgba(220, 68, 41, 0.1)",
+  },
+  subscriptionBannerActive: {
+    borderColor: "#000000",
+    backgroundColor: "rgba(0, 0, 0, 0.05)",
+  },
+  subscriptionBannerText: {
+    fontWeight: "600",
+  },
+  subscriptionTextInactive: {
+    color: "#DC4429",
+  },
+  subscriptionTextActive: {
+    color: "#000000",
   },
 });

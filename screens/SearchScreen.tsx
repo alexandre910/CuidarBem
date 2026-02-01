@@ -20,7 +20,7 @@ type NavigationProp = NativeStackNavigationProp<SearchStackParamList>;
 export default function SearchScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { professionals, searchProfessionals } = useData();
-  const { user } = useAuth();
+  const { user, subscription } = useAuth();
   const { paddingTop, paddingBottom } = useScreenInsets();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,7 +56,12 @@ export default function SearchScreen() {
   };
 
   const renderItem = ({ item }: { item: Cuidador | Enfermeiro }) => (
-    <ProfileCard profile={item} onPress={() => handleProfilePress(item)} />
+    <ProfileCard 
+      profile={item} 
+      onPress={() => handleProfilePress(item)}
+      isOwnProfile={isProfessional && user?.id === item.id}
+      subscription={isProfessional && user?.id === item.id ? subscription : undefined}
+    />
   );
 
   return (
