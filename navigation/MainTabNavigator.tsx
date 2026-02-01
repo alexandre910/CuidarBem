@@ -100,9 +100,9 @@ export default function MainTabNavigator() {
         name="ProfileTab"
         component={ProfileStackNavigator}
         options={{
-          title: "Perfil",
+          title: "Menu",
           tabBarIcon: ({ color, size }) => (
-            <Feather name="user" size={size} color={color} />
+            <Feather name="menu" size={size} color={color} />
           ),
         }}
       />
