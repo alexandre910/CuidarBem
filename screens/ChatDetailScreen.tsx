@@ -331,9 +331,9 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   headerAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: Colors.light.backgroundSecondary,
     alignItems: "center",
     justifyContent: "center",
@@ -341,12 +341,12 @@ const styles = StyleSheet.create({
   },
   headerAvatarClickable: {
     borderWidth: 2,
-    borderColor: Colors.light.primary,
+    borderColor: "#000000",
   },
   headerAvatarImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   headerName: {
     fontWeight: "600",
