@@ -307,7 +307,22 @@ export default function ProfileDetailScreen() {
         <ThemedText type="h4" style={styles.sectionTitle}>
           Contato
         </ThemedText>
-        {isProfessional && isViewingProfessional ? (
+        {isProfessional && isViewingProfessional && professionalHasActiveSubscription ? (
+          <View style={styles.contactInfoActive}>
+            <View style={styles.contactRow}>
+              <Feather name="phone" size={18} color="#000000" />
+              <ThemedText type="body" style={styles.contactTextActive}>
+                {profile.telefone}
+              </ThemedText>
+            </View>
+            <View style={styles.contactRow}>
+              <Feather name="mail" size={18} color="#000000" />
+              <ThemedText type="body" style={styles.contactTextActive}>
+                {profile.email}
+              </ThemedText>
+            </View>
+          </View>
+        ) : isProfessional && isViewingProfessional ? (
           <Pressable 
             style={styles.restrictedNotice}
             onPress={() => setSubscriptionModal(true)}
@@ -695,6 +710,18 @@ const styles = StyleSheet.create({
   },
   contactText: {
     marginLeft: Spacing.md,
+  },
+  contactInfoActive: {
+    backgroundColor: Colors.light.backgroundDefault,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    borderWidth: 2,
+    borderColor: "#000000",
+  },
+  contactTextActive: {
+    marginLeft: Spacing.md,
+    color: "#000000",
+    fontWeight: "500",
   },
   subscriptionNotice: {
     flexDirection: "row",
