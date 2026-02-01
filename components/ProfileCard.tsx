@@ -71,22 +71,6 @@ export function ProfileCard({ profile, onPress, isOwnProfile, subscription }: Pr
       onPressOut={handlePressOut}
       style={[styles.card, animatedStyle]}
     >
-      {isOwnProfile ? (
-        <View style={[
-          styles.subscriptionBanner,
-          hasActiveSubscription ? styles.subscriptionBannerActive : styles.subscriptionBannerInactive
-        ]}>
-          <ThemedText 
-            type="small" 
-            style={[
-              styles.subscriptionBannerText,
-              hasActiveSubscription ? styles.subscriptionTextActive : styles.subscriptionTextInactive
-            ]}
-          >
-            {hasActiveSubscription ? "Assinatura Ativa" : "Assine para aparecer nas buscas"}
-          </ThemedText>
-        </View>
-      ) : null}
       <View style={styles.header}>
         <Avatar uri={profile.foto} size={70} role={profile.role} />
         <View style={styles.headerInfo}>
