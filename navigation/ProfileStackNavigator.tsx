@@ -61,7 +61,7 @@ export default function ProfileStackNavigator() {
         name="Profile"
         component={ProfileScreen}
         options={{
-          title: "Meu Perfil",
+          title: "Menu",
           headerLeft: () => <ProfileBackButton />,
         }}
       />
