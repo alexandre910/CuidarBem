@@ -200,6 +200,37 @@ export default function ProfileScreen() {
         ) : null}
       </Pressable>
 
+      {isProfessional ? (
+        <View style={[
+          styles.contactBanner,
+          subscription?.status === "ativo" ? styles.contactBannerActive : styles.contactBannerInactive
+        ]}>
+          {subscription?.status === "ativo" ? (
+            <>
+              <ThemedText type="small" style={styles.contactBannerTitle}>
+                Seus contatos visíveis para contratantes:
+              </ThemedText>
+              <View style={styles.contactInfo}>
+                <Feather name="mail" size={16} color="#000000" />
+                <ThemedText type="body" style={styles.contactText}>
+                  {user?.email}
+                </ThemedText>
+              </View>
+              <View style={styles.contactInfo}>
+                <Feather name="phone" size={16} color="#000000" />
+                <ThemedText type="body" style={styles.contactText}>
+                  {user?.telefone || "Não informado"}
+                </ThemedText>
+              </View>
+            </>
+          ) : (
+            <ThemedText type="body" style={styles.contactBannerTextInactive}>
+              Assine para liberar seu contato aos contratantes
+            </ThemedText>
+          )}
+        </View>
+      ) : null}
+
       <View style={styles.quickActions}>
         <Pressable
           style={styles.quickActionItem}
@@ -554,5 +585,40 @@ const styles = StyleSheet.create({
   },
   changeDocumentText: {
     color: Colors.light.primary,
+  },
+  contactBanner: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    borderWidth: 2,
+    marginBottom: Spacing["2xl"],
+    alignItems: "center",
+  },
+  contactBannerInactive: {
+    borderColor: "#DC4429",
+    backgroundColor: "rgba(220, 68, 41, 0.1)",
+  },
+  contactBannerActive: {
+    borderColor: "#000000",
+    backgroundColor: "rgba(0, 0, 0, 0.05)",
+  },
+  contactBannerTitle: {
+    color: "#000000",
+    fontWeight: "600",
+    marginBottom: Spacing.sm,
+  },
+  contactBannerTextInactive: {
+    color: "#DC4429",
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  contactInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+    marginTop: Spacing.xs,
+  },
+  contactText: {
+    color: "#000000",
+    fontWeight: "500",
   },
 });
