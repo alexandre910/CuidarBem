@@ -354,6 +354,6 @@ const styles = StyleSheet.create({
   },
   headerHint: {
     color: "#DC4429",
-    fontSize: 10,
+    fontSize: 12,
   },
 });
