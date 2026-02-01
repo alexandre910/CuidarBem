@@ -200,37 +200,6 @@ export default function ProfileScreen() {
         ) : null}
       </Pressable>
 
-      {isProfessional ? (
-        <View style={[
-          styles.contactBanner,
-          subscription?.status === "ativo" ? styles.contactBannerActive : styles.contactBannerInactive
-        ]}>
-          {subscription?.status === "ativo" ? (
-            <>
-              <ThemedText type="small" style={styles.contactBannerTitle}>
-                Seus contatos visíveis para contratantes:
-              </ThemedText>
-              <View style={styles.contactInfo}>
-                <Feather name="mail" size={16} color="#000000" />
-                <ThemedText type="body" style={styles.contactText}>
-                  {user?.email}
-                </ThemedText>
-              </View>
-              <View style={styles.contactInfo}>
-                <Feather name="phone" size={16} color="#000000" />
-                <ThemedText type="body" style={styles.contactText}>
-                  {user?.telefone || "Não informado"}
-                </ThemedText>
-              </View>
-            </>
-          ) : (
-            <ThemedText type="body" style={styles.contactBannerTextInactive}>
-              Assine para liberar seu contato aos contratantes
-            </ThemedText>
-          )}
-        </View>
-      ) : null}
-
       <View style={styles.quickActions}>
         <Pressable
           style={styles.quickActionItem}
