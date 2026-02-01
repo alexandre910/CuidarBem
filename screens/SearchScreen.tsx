@@ -9,6 +9,7 @@ import { Input } from "@/components/Input";
 import { ProfileCard } from "@/components/ProfileCard";
 import { FilterModal } from "@/components/FilterModal";
 import { useData } from "@/context/DataContext";
+import { useAuth } from "@/context/AuthContext";
 import { useScreenInsets } from "@/hooks/useScreenInsets";
 import { Colors, Spacing } from "@/constants/theme";
 import { SearchFilters, Cuidador, Enfermeiro } from "@/types";
@@ -19,13 +20,21 @@ type NavigationProp = NativeStackNavigationProp<SearchStackParamList>;
 export default function SearchScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { professionals, searchProfessionals } = useData();
+  const { user } = useAuth();
   const { paddingTop, paddingBottom } = useScreenInsets();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({});
 
+  const isProfessional = user?.role === "cuidador" || user?.role === "enfermeiro";
+
   const filteredProfessionals = useMemo(() => {
+    if (isProfessional && user) {
+      const ownProfile = professionals.find(p => p.id === user.id);
+      return ownProfile ? [ownProfile] : [];
+    }
+
     let results = searchProfessionals(filters);
 
     if (searchQuery.trim()) {
@@ -38,7 +47,7 @@ export default function SearchScreen() {
     }
 
     return results.sort((a, b) => b.avaliacaoMedia - a.avaliacaoMedia);
-  }, [professionals, filters, searchQuery]);
+  }, [professionals, filters, searchQuery, isProfessional, user]);
 
   const activeFiltersCount = Object.values(filters).filter(Boolean).length;
 
@@ -52,30 +61,38 @@ export default function SearchScreen() {
 
   return (
     <View style={[styles.container, { paddingTop }]}>
-      <View style={styles.searchHeader}>
-        <View style={styles.searchInputContainer}>
-          <Input
-            placeholder="Buscar por nome ou cidade..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            leftIcon="search"
-            containerStyle={styles.searchInput}
-          />
+      {isProfessional ? (
+        <View style={styles.professionalHeader}>
+          <ThemedText type="subtitle" style={styles.professionalTitle}>
+            Meu Perfil Profissional
+          </ThemedText>
         </View>
-        <Pressable
-          onPress={() => setShowFilters(true)}
-          style={styles.filterButton}
-        >
-          <Feather name="sliders" size={22} color={Colors.light.text} />
-          {activeFiltersCount > 0 ? (
-            <View style={styles.filterBadge}>
-              <ThemedText type="caption" style={styles.filterBadgeText}>
-                {activeFiltersCount}
-              </ThemedText>
-            </View>
-          ) : null}
-        </Pressable>
-      </View>
+      ) : (
+        <View style={styles.searchHeader}>
+          <View style={styles.searchInputContainer}>
+            <Input
+              placeholder="Buscar por nome ou cidade..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              leftIcon="search"
+              containerStyle={styles.searchInput}
+            />
+          </View>
+          <Pressable
+            onPress={() => setShowFilters(true)}
+            style={styles.filterButton}
+          >
+            <Feather name="sliders" size={22} color={Colors.light.text} />
+            {activeFiltersCount > 0 ? (
+              <View style={styles.filterBadge}>
+                <ThemedText type="caption" style={styles.filterBadgeText}>
+                  {activeFiltersCount}
+                </ThemedText>
+              </View>
+            ) : null}
+          </Pressable>
+        </View>
+      )}
 
       <FlatList
         data={filteredProfessionals}
@@ -113,6 +130,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.light.backgroundRoot,
+  },
+  professionalHeader: {
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.md,
+  },
+  professionalTitle: {
+    textAlign: "center",
+    color: Colors.light.text,
   },
   searchHeader: {
     flexDirection: "row",
