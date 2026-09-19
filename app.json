@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "cuidarbem",
     "userInterfaceStyle": "light",
-
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.cuidarbem.app"
@@ -17,7 +16,6 @@
         "backgroundColor": "#FFFAC7",
         "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
-      
       "predictiveBackGestureEnabled": false,
       "package": "com.cuidarbem.app"
     },

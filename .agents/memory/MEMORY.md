@@ -1,0 +1,1 @@
+- [Expo DevTools no Replit](expo-devtools-replit.md) — ausência de libglib pode gerar aviso não bloqueante enquanto Metro, bundles e preview continuam funcionando.

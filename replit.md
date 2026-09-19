@@ -8,7 +8,7 @@ CuidarBem é um aplicativo mobile que conecta famílias a cuidadores e enfermeir
 ## Arquitetura do Projeto
 
 ### Stack Tecnológico
-- **Framework:** React Native com Expo SDK 54
+- **Framework:** React Native com Expo SDK 57
 - **Navegação:** React Navigation 7+
 - **Armazenamento:** AsyncStorage para persistência local
 - **UI:** Componentes customizados seguindo design system próprio

@@ -5,68 +5,70 @@ import {
   KeyboardAwareScrollView,
   KeyboardAwareScrollViewProps,
 } from "react-native-keyboard-controller";
+import type { KeyboardAwareScrollViewRef } from "react-native-keyboard-controller";
 
 import { useTheme } from "@/hooks/useTheme";
 import { useScreenInsets } from "@/hooks/useScreenInsets";
 import { Spacing } from "@/constants/theme";
 import { ScreenScrollView } from "./ScreenScrollView";
 
-export const ScreenKeyboardAwareScrollView = forwardRef<ScrollView, KeyboardAwareScrollViewProps>(
-  function ScreenKeyboardAwareScrollView(
-    {
-      children,
-      contentContainerStyle,
-      style,
-      keyboardShouldPersistTaps = "handled",
-      ...scrollViewProps
-    },
-    ref
-  ) {
-    const { theme } = useTheme();
-    const { paddingTop, paddingBottom, scrollInsetBottom } = useScreenInsets();
+export const ScreenKeyboardAwareScrollView = forwardRef<
+  ScrollView,
+  KeyboardAwareScrollViewProps
+>(function ScreenKeyboardAwareScrollView(
+  {
+    children,
+    contentContainerStyle,
+    style,
+    keyboardShouldPersistTaps = "handled",
+    ...scrollViewProps
+  },
+  ref,
+) {
+  const { theme } = useTheme();
+  const { paddingTop, paddingBottom, scrollInsetBottom } = useScreenInsets();
 
-    /**
-     * KeyboardAwareScrollView isn't compatible with web (it relies on native APIs), so the code falls back to ScreenScrollView on web to avoid runtime errors.
-     */
-    if (Platform.OS === "web") {
-      return (
-        <ScreenScrollView
-          ref={ref}
-          style={style}
-          contentContainerStyle={contentContainerStyle}
-          keyboardShouldPersistTaps={keyboardShouldPersistTaps}
-          {...scrollViewProps}
-        >
-          {children}
-        </ScreenScrollView>
-      );
-    }
-
+  /**
+   * KeyboardAwareScrollView isn't compatible with web (it relies on native APIs), so the code falls back to ScreenScrollView on web to avoid runtime errors.
+   */
+  if (Platform.OS === "web") {
     return (
-      <KeyboardAwareScrollView
+      <ScreenScrollView
         ref={ref}
-        style={[
-          styles.container,
-          { backgroundColor: theme.backgroundRoot },
-          style,
-        ]}
-        contentContainerStyle={[
-          {
-            paddingTop,
-            paddingBottom,
-          },
-          styles.contentContainer,
-          contentContainerStyle,
-        ]}
-        scrollIndicatorInsets={{ bottom: scrollInsetBottom }}
+        style={style}
+        contentContainerStyle={contentContainerStyle}
         keyboardShouldPersistTaps={keyboardShouldPersistTaps}
         {...scrollViewProps}
       >
         {children}
-      </KeyboardAwareScrollView>
+      </ScreenScrollView>
     );
   }
-);
+
+  return (
+    <KeyboardAwareScrollView
+      ref={ref as React.Ref<KeyboardAwareScrollViewRef>}
+      style={[
+        styles.container,
+        { backgroundColor: theme.backgroundRoot },
+        style,
+      ]}
+      contentContainerStyle={[
+        {
+          paddingTop,
+          paddingBottom,
+        },
+        styles.contentContainer,
+        contentContainerStyle,
+      ]}
+      scrollIndicatorInsets={{ bottom: scrollInsetBottom }}
+      keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+      {...scrollViewProps}
+    >
+      {children}
+    </KeyboardAwareScrollView>
+  );
+});
 
 const styles = StyleSheet.create({
   container: {
