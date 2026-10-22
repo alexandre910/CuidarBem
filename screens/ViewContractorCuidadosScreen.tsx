@@ -97,6 +97,15 @@ export default function ViewContractorCuidadosScreen() {
                   <ThemedText type="small" style={styles.cardInfo}>
                     Horários: {med.horarios.join(", ")}
                   </ThemedText>
+                  <ThemedText type="small" style={styles.cardInfo}>
+                    Uso contínuo: {med.usoContinuo === false ? "Não" : "Sim"}
+                  </ThemedText>
+                  {med.usoContinuo === false &&
+                  (med.dataInicio || med.dataTermino) ? (
+                    <ThemedText type="small" style={styles.cardInfo}>
+                      Período: {med.dataInicio || "—"} a {med.dataTermino || "—"}
+                    </ThemedText>
+                  ) : null}
                   {med.observacoes ? (
                     <ThemedText type="caption" style={styles.cardObs}>
                       Obs: {med.observacoes}

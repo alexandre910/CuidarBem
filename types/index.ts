@@ -65,6 +65,9 @@ export interface Medicamento {
   nome: string;
   dosagem: string;
   horarios: string[];
+  usoContinuo?: boolean;
+  dataInicio?: string;
+  dataTermino?: string;
   observacoes?: string;
 }
 

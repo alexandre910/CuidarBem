@@ -65,8 +65,16 @@ export default function CareScreen() {
 
   const openAddModal = (type: CareType) => {
     setModalType(type);
-    setFormData({});
+    setFormData(type === "medicamento" ? { usoContinuo: "sim" } : {});
     setShowModal(true);
+  };
+
+  const showMessage = (title: string, message: string) => {
+    if (Platform.OS === "web" && typeof window !== "undefined") {
+      window.alert(`${title}\n\n${message}`);
+      return;
+    }
+    Alert.alert(title, message);
   };
 
   const handleSave = async () => {
@@ -76,21 +84,36 @@ export default function CareScreen() {
       switch (modalType) {
         case "medicamento":
           if (!formData.nome || !formData.dosagem) {
-            Alert.alert("Erro", "Preencha nome e dosagem do medicamento");
+            showMessage("Erro", "Preencha nome e dosagem do medicamento");
             setSaving(false);
             return;
           }
+          if (
+            formData.usoContinuo === "nao" &&
+            (!formData.dataInicio?.trim() || !formData.dataTermino?.trim())
+          ) {
+            showMessage(
+              "Erro",
+              "Preencha a data de início e a data de término do medicamento.",
+            );
+            setSaving(false);
+            return;
+          }
+          const usoContinuo = formData.usoContinuo !== "nao";
           await addMedicamento({
             nome: formData.nome,
             dosagem: formData.dosagem,
             horarios: formData.horarios?.split(",").map((h) => h.trim()) || [],
+            usoContinuo,
+            dataInicio: usoContinuo ? undefined : formData.dataInicio.trim(),
+            dataTermino: usoContinuo ? undefined : formData.dataTermino.trim(),
             observacoes: formData.observacoes,
           });
           break;
 
         case "refeicao":
           if (!formData.tipo || !formData.horario) {
-            Alert.alert("Erro", "Preencha tipo e horário da refeição");
+            showMessage("Erro", "Preencha tipo e horário da refeição");
             setSaving(false);
             return;
           }
@@ -103,7 +126,7 @@ export default function CareScreen() {
 
         case "consulta":
           if (!formData.especialidade || !formData.medico || !formData.data) {
-            Alert.alert("Erro", "Preencha especialidade, médico e data");
+            showMessage("Erro", "Preencha especialidade, médico e data");
             setSaving(false);
             return;
           }
@@ -119,7 +142,7 @@ export default function CareScreen() {
 
         case "exercicio":
           if (!formData.tipo || !formData.frequencia) {
-            Alert.alert("Erro", "Preencha tipo e frequência do exercício");
+            showMessage("Erro", "Preencha tipo e frequência do exercício");
             setSaving(false);
             return;
           }
@@ -135,7 +158,7 @@ export default function CareScreen() {
       setShowModal(false);
       setFormData({});
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível salvar");
+      showMessage("Erro", "Não foi possível salvar");
     }
 
     setSaving(false);
@@ -218,6 +241,55 @@ export default function CareScreen() {
               onChangeText={(v) => setFormData({ ...formData, observacoes: v })}
               multiline
             />
+            <View style={styles.continuousUseSection}>
+              <ThemedText type="small" style={styles.continuousUseLabel}>
+                Uso contínuo?
+              </ThemedText>
+              <View style={styles.continuousUseOptions}>
+                {(["sim", "nao"] as const).map((value) => {
+                  const selected = (formData.usoContinuo || "sim") === value;
+                  return (
+                    <Pressable
+                      key={value}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected }}
+                      onPress={() =>
+                        setFormData({ ...formData, usoContinuo: value })
+                      }
+                      style={[
+                        styles.continuousUseOption,
+                        selected && styles.continuousUseOptionSelected,
+                      ]}
+                    >
+                      <Feather
+                        name={selected ? "check-circle" : "circle"}
+                        size={18}
+                        color={selected ? Colors.light.accent1 : "#666666"}
+                      />
+                      <ThemedText type="body" style={styles.continuousUseOptionText}>
+                        {value === "sim" ? "Sim" : "Não"}
+                      </ThemedText>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+            {formData.usoContinuo === "nao" ? (
+              <>
+                <Input
+                  label="Data de início"
+                  placeholder="DD/MM/AAAA"
+                  value={formData.dataInicio || ""}
+                  onChangeText={(v) => setFormData({ ...formData, dataInicio: v })}
+                />
+                <Input
+                  label="Data de término"
+                  placeholder="DD/MM/AAAA"
+                  value={formData.dataTermino || ""}
+                  onChangeText={(v) => setFormData({ ...formData, dataTermino: v })}
+                />
+              </>
+            ) : null}
           </>
         );
 
@@ -362,6 +434,18 @@ export default function CareScreen() {
                     title = item.nome;
                     subtitle = item.dosagem;
                     details = item.horarios || [];
+                    details = [
+                      ...details,
+                      `Uso contínuo: ${item.usoContinuo === false ? "Não" : "Sim"}`,
+                    ];
+                    if (
+                      item.usoContinuo === false &&
+                      (item.dataInicio || item.dataTermino)
+                    ) {
+                      details.push(
+                        `Período: ${item.dataInicio || "—"} a ${item.dataTermino || "—"}`,
+                      );
+                    }
                     if (item.observacoes) {
                       details = [...details, `Observações: ${item.observacoes}`];
                     }
@@ -507,6 +591,37 @@ const styles = StyleSheet.create({
   },
   savingText: {
     opacity: 0.5,
+  },
+  continuousUseSection: {
+    marginBottom: Spacing.lg,
+  },
+  continuousUseLabel: {
+    marginBottom: Spacing.sm,
+    fontWeight: "500",
+  },
+  continuousUseOptions: {
+    flexDirection: "row",
+    gap: Spacing.md,
+  },
+  continuousUseOption: {
+    flex: 1,
+    minHeight: 44,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: Colors.light.backgroundDefault,
+  },
+  continuousUseOptionSelected: {
+    borderColor: Colors.light.accent1,
+    borderWidth: 2,
+  },
+  continuousUseOptionText: {
+    fontWeight: "500",
   },
   modalContent: {
     flex: 1,
