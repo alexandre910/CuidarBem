@@ -140,13 +140,23 @@ export default function ProfileScreen() {
     Alert.alert("Sucesso", "Perfil atualizado com sucesso!");
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (Platform.OS === "web") {
+      if (
+        typeof window !== "undefined" &&
+        window.confirm("Tem certeza que deseja sair da sua conta?")
+      ) {
+        await logout();
+      }
+      return;
+    }
+
     Alert.alert(
       "Sair",
       "Tem certeza que deseja sair da sua conta?",
       [
         { text: "Cancelar", style: "cancel" },
-        { text: "Sair", style: "destructive", onPress: logout },
+        { text: "Sair", style: "destructive", onPress: () => void logout() },
       ]
     );
   };

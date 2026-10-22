@@ -147,10 +147,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await AsyncStorage.multiRemove([STORAGE_KEYS.USER, STORAGE_KEYS.SUBSCRIPTION]);
-      setUser(null);
-      setSubscription(null);
     } catch (error) {
       console.error("Logout error:", error);
+    } finally {
+      setUser(null);
+      setSubscription(null);
     }
   };
 
