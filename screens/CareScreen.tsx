@@ -378,6 +378,9 @@ export default function CareScreen() {
                     title = item.tipo;
                     subtitle = item.frequencia;
                     if (item.duracao) details = [item.duracao];
+                    if (item.observacoes) {
+                      details = [...details, `Observações: ${item.observacoes}`];
+                    }
                   }
 
                   return (
