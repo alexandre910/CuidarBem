@@ -362,6 +362,9 @@ export default function CareScreen() {
                     title = item.nome;
                     subtitle = item.dosagem;
                     details = item.horarios || [];
+                    if (item.observacoes) {
+                      details = [...details, `Observações: ${item.observacoes}`];
+                    }
                   } else if (type === "refeicao") {
                     title = item.tipo;
                     subtitle = item.horario;
