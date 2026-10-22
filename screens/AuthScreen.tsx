@@ -45,6 +45,14 @@ export default function AuthScreen() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const clearLoginFeedback = () => {
+    setErrors((current) => {
+      if (!current.submit) return current;
+      const { submit: _submit, ...remainingErrors } = current;
+      return remainingErrors;
+    });
+  };
+
   const cpfCnpjRef = useRef<TextInput>(null);
   const corenRef = useRef<TextInput>(null);
   const telefoneRef = useRef<TextInput>(null);
@@ -174,11 +182,22 @@ export default function AuthScreen() {
     if (!validateLogin()) return;
 
     setLoading(true);
-    const success = await login(email, password);
-    setLoading(false);
-
-    if (!success) {
-      Alert.alert("Erro", "E-mail ou senha incorretos");
+    clearLoginFeedback();
+    try {
+      const success = await login(email.trim(), password);
+      if (!success) {
+        setErrors((current) => ({
+          ...current,
+          submit: "E-mail ou senha incorretos. Confira os dados ou faça seu cadastro.",
+        }));
+      }
+    } catch {
+      setErrors((current) => ({
+        ...current,
+        submit: "Não foi possível entrar agora. Tente novamente.",
+      }));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -357,7 +376,10 @@ export default function AuthScreen() {
           label="E-mail"
           placeholder="seu@email.com"
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(value) => {
+            setEmail(value);
+            clearLoginFeedback();
+          }}
           error={errors.email}
           leftIcon="mail"
           keyboardType="email-address"
@@ -371,7 +393,10 @@ export default function AuthScreen() {
           label="Senha"
           placeholder="Sua senha"
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(value) => {
+            setPassword(value);
+            clearLoginFeedback();
+          }}
           error={errors.password}
           secureTextEntry
           leftIcon="lock"
@@ -407,6 +432,11 @@ export default function AuthScreen() {
         >
           {mode === "login" ? "Entrar" : "Cadastrar"}
         </Button>
+        {mode === "login" && errors.submit ? (
+          <ThemedText type="caption" style={styles.submitError}>
+            {errors.submit}
+          </ThemedText>
+        ) : null}
 
         <View style={styles.switchModeContainer}>
           <ThemedText type="small" style={styles.switchModeText}>
@@ -519,6 +549,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 8,
+  },
+  submitError: {
+    color: Colors.light.error,
+    marginTop: Spacing.sm,
+    textAlign: "center",
   },
   switchModeContainer: {
     flexDirection: "row",
