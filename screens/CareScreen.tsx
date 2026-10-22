@@ -6,6 +6,7 @@ import {
   Modal,
   ScrollView,
   Alert,
+  Platform,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
@@ -140,28 +141,49 @@ export default function CareScreen() {
     setSaving(false);
   };
 
+  const removeCareItem = async (type: CareType, id: string) => {
+    try {
+      switch (type) {
+        case "medicamento":
+          await deleteMedicamento(id);
+          break;
+        case "refeicao":
+          await deleteRefeicao(id);
+          break;
+        case "consulta":
+          await deleteConsulta(id);
+          break;
+        case "exercicio":
+          await deleteExercicio(id);
+          break;
+      }
+    } catch (error) {
+      console.error("Error deleting care item:", error);
+      if (Platform.OS === "web" && typeof window !== "undefined") {
+        window.alert("Não foi possível excluir este item. Tente novamente.");
+      } else {
+        Alert.alert("Erro", "Não foi possível excluir este item. Tente novamente.");
+      }
+    }
+  };
+
   const handleDelete = (type: CareType, id: string) => {
+    if (Platform.OS === "web") {
+      if (
+        typeof window !== "undefined" &&
+        window.confirm("Deseja remover este item?")
+      ) {
+        void removeCareItem(type, id);
+      }
+      return;
+    }
+
     Alert.alert("Confirmar", "Deseja remover este item?", [
       { text: "Cancelar", style: "cancel" },
       {
         text: "Remover",
         style: "destructive",
-        onPress: async () => {
-          switch (type) {
-            case "medicamento":
-              await deleteMedicamento(id);
-              break;
-            case "refeicao":
-              await deleteRefeicao(id);
-              break;
-            case "consulta":
-              await deleteConsulta(id);
-              break;
-            case "exercicio":
-              await deleteExercicio(id);
-              break;
-          }
-        },
+        onPress: () => void removeCareItem(type, id),
       },
     ]);
   };
