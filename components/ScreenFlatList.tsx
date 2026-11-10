@@ -3,7 +3,7 @@ import { FlatList, FlatListProps, StyleSheet } from "react-native";
 
 import { useTheme } from "@/hooks/useTheme";
 import { useScreenInsets } from "@/hooks/useScreenInsets";
-import { Spacing } from "@/constants/theme";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 export function ScreenFlatList<T>({
   contentContainerStyle,
@@ -12,6 +12,8 @@ export function ScreenFlatList<T>({
 }: FlatListProps<T>) {
   const { theme } = useTheme();
   const { paddingTop, paddingBottom, scrollInsetBottom } = useScreenInsets();
+  const { contentMaxWidth, horizontalPadding, isDesktop } =
+    useResponsiveLayout();
 
   return (
     <FlatList
@@ -24,8 +26,11 @@ export function ScreenFlatList<T>({
         {
           paddingTop,
           paddingBottom,
+          paddingHorizontal: horizontalPadding,
+          width: "100%",
+          maxWidth: isDesktop ? contentMaxWidth : undefined,
+          alignSelf: "center",
         },
-        styles.contentContainer,
         contentContainerStyle,
       ]}
       scrollIndicatorInsets={{ bottom: scrollInsetBottom }}
@@ -37,8 +42,5 @@ export function ScreenFlatList<T>({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  contentContainer: {
-    paddingHorizontal: Spacing.xl,
   },
 });

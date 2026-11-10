@@ -1,5 +1,10 @@
 import React, { useState, useMemo } from "react";
-import { StyleSheet, View, Pressable, FlatList } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Pressable,
+  FlatList,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -12,6 +17,7 @@ import { useData } from "@/context/DataContext";
 import { useAuth } from "@/context/AuthContext";
 import { useScreenInsets } from "@/hooks/useScreenInsets";
 import { Colors, Spacing } from "@/constants/theme";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { SearchFilters, Cuidador, Enfermeiro } from "@/types";
 import { SearchStackParamList } from "@/navigation/SearchStackNavigator";
 
@@ -22,6 +28,8 @@ export default function SearchScreen() {
   const { professionals, searchProfessionals } = useData();
   const { user, subscription } = useAuth();
   const { paddingTop, paddingBottom } = useScreenInsets();
+  const { isDesktop, contentMaxWidth, horizontalPadding } =
+    useResponsiveLayout();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -56,24 +64,40 @@ export default function SearchScreen() {
   };
 
   const renderItem = ({ item }: { item: Cuidador | Enfermeiro }) => (
-    <ProfileCard 
-      profile={item} 
-      onPress={() => handleProfilePress(item)}
-      isOwnProfile={isProfessional && user?.id === item.id}
-      subscription={isProfessional && user?.id === item.id ? subscription : undefined}
-    />
+    <View style={isDesktop ? styles.desktopGridItem : undefined}>
+      <ProfileCard
+        profile={item}
+        onPress={() => handleProfilePress(item)}
+        isOwnProfile={isProfessional && user?.id === item.id}
+        subscription={
+          isProfessional && user?.id === item.id ? subscription : undefined
+        }
+      />
+    </View>
   );
 
   return (
     <View style={[styles.container, { paddingTop }]}>
       {isProfessional ? (
-        <View style={styles.professionalHeader}>
+        <View
+          style={[
+            styles.professionalHeader,
+            isDesktop && styles.desktopSection,
+            { maxWidth: isDesktop ? contentMaxWidth : undefined },
+          ]}
+        >
           <ThemedText type="subtitle" style={styles.professionalTitle}>
             Meu Perfil Profissional
           </ThemedText>
         </View>
       ) : (
-        <View style={styles.searchHeader}>
+        <View
+          style={[
+            styles.searchHeader,
+            isDesktop && styles.desktopSection,
+            { maxWidth: isDesktop ? contentMaxWidth : undefined },
+          ]}
+        >
           <View style={styles.searchInputContainer}>
             <Input
               placeholder="Buscar por nome ou cidade..."
@@ -100,12 +124,20 @@ export default function SearchScreen() {
       )}
 
       <FlatList
+        key={isDesktop ? "desktop-columns" : "mobile-column"}
         data={filteredProfessionals}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
+        numColumns={isDesktop ? 2 : 1}
+        columnWrapperStyle={isDesktop ? styles.desktopGridRow : undefined}
         contentContainerStyle={[
           styles.list,
-          { paddingBottom: paddingBottom + Spacing.xl },
+          isDesktop && styles.desktopList,
+          {
+            paddingBottom: paddingBottom + Spacing.xl,
+            paddingHorizontal: horizontalPadding,
+            maxWidth: isDesktop ? contentMaxWidth : undefined,
+          },
         ]}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
@@ -139,6 +171,11 @@ const styles = StyleSheet.create({
   professionalHeader: {
     paddingHorizontal: Spacing.xl,
     paddingBottom: Spacing.md,
+  },
+  desktopSection: {
+    width: "100%",
+    alignSelf: "center",
+    paddingHorizontal: Spacing["3xl"],
   },
   professionalTitle: {
     textAlign: "center",
@@ -187,6 +224,17 @@ const styles = StyleSheet.create({
   list: {
     paddingHorizontal: Spacing.xl,
     paddingTop: Spacing.md,
+  },
+  desktopList: {
+    width: "100%",
+    alignSelf: "center",
+  },
+  desktopGridRow: {
+    justifyContent: "space-between",
+    gap: Spacing.lg,
+  },
+  desktopGridItem: {
+    width: "48.5%",
   },
   emptyContainer: {
     alignItems: "center",

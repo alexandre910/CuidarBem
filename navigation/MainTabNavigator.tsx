@@ -11,7 +11,8 @@ import CareStackNavigator from "@/navigation/CareStackNavigator";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/AuthContext";
 import { useData } from "@/context/DataContext";
-import { Colors } from "@/constants/theme";
+import { BorderRadius, Colors, Spacing } from "@/constants/theme";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 export type MainTabParamList = {
   SearchTab: undefined;
@@ -26,6 +27,7 @@ export default function MainTabNavigator() {
   const { theme, isDark } = useTheme();
   const { user } = useAuth();
   const { unreadCount } = useData();
+  const { isDesktop } = useResponsiveLayout();
 
   const showCareTab = user?.role === "contratante";
 
@@ -33,17 +35,27 @@ export default function MainTabNavigator() {
     <Tab.Navigator
       initialRouteName="SearchTab"
       screenOptions={{
+        tabBarPosition: isDesktop ? "left" : "bottom",
+        tabBarVariant: isDesktop ? "material" : "uikit",
+        tabBarLabelPosition: isDesktop ? "beside-icon" : "below-icon",
         tabBarActiveTintColor: Colors.light.tabIconSelected,
         tabBarInactiveTintColor: Colors.light.tabIconDefault,
-        tabBarStyle: {
-          position: "absolute",
-          backgroundColor: Platform.select({
-            ios: "transparent",
-            android: Colors.light.backgroundRoot,
-          }),
-          borderTopWidth: 0,
-          elevation: 0,
-        },
+        tabBarActiveBackgroundColor: isDesktop
+          ? "rgba(148, 43, 24, 0.10)"
+          : undefined,
+        tabBarItemStyle: isDesktop ? styles.desktopTabItem : undefined,
+        tabBarLabelStyle: isDesktop ? styles.desktopTabLabel : undefined,
+        tabBarStyle: isDesktop
+          ? styles.desktopTabBar
+          : {
+              position: "absolute",
+              backgroundColor: Platform.select({
+                ios: "transparent",
+                android: Colors.light.backgroundRoot,
+              }),
+              borderTopWidth: 0,
+              elevation: 0,
+            },
         tabBarBackground: () =>
           Platform.OS === "ios" ? (
             <BlurView
@@ -111,6 +123,24 @@ export default function MainTabNavigator() {
 }
 
 const styles = StyleSheet.create({
+  desktopTabBar: {
+    width: 248,
+    backgroundColor: Colors.light.backgroundDefault,
+    borderRightColor: Colors.light.border,
+    borderRightWidth: 1,
+    borderTopWidth: 0,
+    elevation: 0,
+    paddingTop: Spacing.xl,
+  },
+  desktopTabItem: {
+    minHeight: 52,
+    marginHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  desktopTabLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
   badge: {
     position: "absolute",
     right: -8,

@@ -16,6 +16,7 @@ import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { Colors, Spacing, BorderRadius } from "@/constants/theme";
 import { useAuth } from "@/context/AuthContext";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { UserRole } from "@/types";
 
 type AuthMode = "login" | "register";
@@ -29,6 +30,7 @@ const roleOptions: { value: UserRole; label: string }[] = [
 
 export default function AuthScreen() {
   const insets = useSafeAreaInsets();
+  const { isDesktop } = useResponsiveLayout();
   const { login, register } = useAuth();
   const [mode, setMode] = useState<AuthMode>("login");
   const [loading, setLoading] = useState(false);
@@ -229,10 +231,15 @@ export default function AuthScreen() {
 
   const content = (
     <>
-      <View style={styles.logoContainer}>
+      <View
+        style={[
+          styles.logoContainer,
+          isDesktop && styles.desktopLogoContainer,
+        ]}
+      >
         <Image
           source={require("../assets/images/logo.png")}
-          style={styles.logo}
+          style={[styles.logo, isDesktop && styles.desktopLogo]}
           resizeMode="contain"
         />
         <ThemedText type="h2" style={styles.appName}>
@@ -242,14 +249,20 @@ export default function AuthScreen() {
           Cuidados com Carinho
         </ThemedText>
         {mode === "login" ? (
-          <ThemedText type="small" style={styles.description}>
+          <ThemedText
+            type="small"
+            style={[
+              styles.description,
+              isDesktop && styles.desktopDescription,
+            ]}
+          >
             Conectamos famílias a cuidadores e enfermeiros qualificados para
             proporcionar o melhor cuidado aos seus entes queridos.
           </ThemedText>
         ) : null}
       </View>
 
-      <View style={styles.form}>
+      <View style={[styles.form, isDesktop && styles.desktopForm]}>
         {mode === "register" ? (
           <>
             <View style={styles.roleSection}>
@@ -462,6 +475,7 @@ export default function AuthScreen() {
       style={styles.container}
       contentContainerStyle={[
         styles.content,
+        isDesktop && styles.desktopContent,
         {
           paddingTop: insets.top + Spacing.xl,
           paddingBottom: insets.bottom + Spacing.xl,
@@ -483,14 +497,34 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: Spacing.xl,
   },
+  desktopContent: {
+    width: "100%",
+    maxWidth: 1180,
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing["5xl"],
+    paddingHorizontal: Spacing["4xl"],
+  },
   logoContainer: {
     alignItems: "center",
     marginBottom: Spacing["3xl"],
+  },
+  desktopLogoContainer: {
+    flex: 1,
+    maxWidth: 440,
+    alignItems: "flex-start",
+    marginBottom: 0,
   },
   logo: {
     width: 100,
     height: 100,
     marginBottom: Spacing.md,
+  },
+  desktopLogo: {
+    width: 128,
+    height: 128,
   },
   appName: {
     marginBottom: Spacing.xs,
@@ -505,8 +539,21 @@ const styles = StyleSheet.create({
     color: "#000000",
     paddingHorizontal: Spacing.xl,
   },
+  desktopDescription: {
+    textAlign: "left",
+    paddingHorizontal: 0,
+  },
   form: {
     flex: 1,
+  },
+  desktopForm: {
+    width: "100%",
+    maxWidth: 480,
+    backgroundColor: Colors.light.backgroundDefault,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    padding: Spacing["4xl"],
   },
   roleSection: {
     marginBottom: Spacing.lg,
